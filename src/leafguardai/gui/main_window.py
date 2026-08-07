@@ -1,4 +1,7 @@
 import customtkinter as ctk
+import cv2
+from tkinter import filedialog
+from leafguardai.vision.preprocess import load_image
 
 class MainWindow(ctk.CTk):
   def __init__(self):
@@ -39,6 +42,18 @@ class MainWindow(ctk.CTk):
 
   def select_image(self):
     print("Selecionar Imagem")
+    path = filedialog.askopenfilename(
+      title="Choose Image",
+      filetypes=[
+        ("images", "*.png *.jpg *.jpeg *.bmp")
+      ]
+    )
+
+    if path:
+      image = load_image(path)
+      cv2.imshow("image",image)
+      cv2.waitKey(0)
+      cv2.destroyAllWindows()
 
   def analyze_image(self):
     print("Executando AI...")
