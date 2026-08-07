@@ -219,7 +219,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-data/
+data/raw
+data/processed
+data/test
 
 #Trained models
 models/
