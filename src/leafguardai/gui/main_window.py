@@ -6,7 +6,7 @@ class MainWindow(ctk.CTk):
     self.title("LeafGuard AI")
     self.geometry("600x480")
     ctk.set_default_color_theme("green")
-    ctk.set_appearance_mode("light")
+    ctk.set_appearance_mode("dark")
     self.create_widgets()
 
   def create_widgets(self):
