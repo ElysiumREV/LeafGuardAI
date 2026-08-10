@@ -51,7 +51,8 @@ class MainWindow(ctk.CTk):
 
     if path:
       image = load_image(path)
-      cv2.imshow("image",image)
+      #cv2.imwrite("output.png",image)
+      cv2.imshow("leaf", image)
       cv2.waitKey(0)
       cv2.destroyAllWindows()
 
