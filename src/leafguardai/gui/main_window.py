@@ -45,7 +45,7 @@ class MainWindow(ctk.CTk):
     path = filedialog.askopenfilename(
       title="Choose Image",
       filetypes=[
-        ("images", "*.png *.jpg *.jpeg *.bmp")
+        ("images", "*.png *.jpg *.jpeg *.JPG *.JPEG *.bmp")
       ]
     )
 
