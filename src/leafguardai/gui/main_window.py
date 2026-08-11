@@ -1,6 +1,7 @@
 import customtkinter as ctk
+from customtkinter import filedialog
 import cv2
-from tkinter import filedialog
+# from tkinter import filedialog
 from leafguardai.vision.preprocess import load_image
 
 class MainWindow(ctk.CTk):
