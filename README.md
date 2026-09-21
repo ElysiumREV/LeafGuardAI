@@ -1,3 +1,7 @@
+## Integrantes do Grupo
+Jean Victor Yoshida Lima <br/>
+João Pedro Cabrera Rodrigues Penna <br/>
+Nícolas Justo Melão
 ## Development
 
 This project uses **uv** to manage dependencies and the virtual environment.
