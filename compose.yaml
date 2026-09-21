@@ -1,0 +1,19 @@
+services:
+  train:
+    build:
+      context: .
+    image: leafguardai-rocm:local
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+    ipc: host
+    shm_size: 8gb
+    user: "1000:1000"
+    environment:
+      TORCH_HOME: /workspace/.cache/torch
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    command: python scripts/train.py

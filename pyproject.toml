@@ -1,7 +1,7 @@
 [project]
 name = "leafguardai"
 version = "0.1.0"
-description = "Add your description here"
+description = "Classificador de doenças em folhas de plantas com EfficientNet-B0"
 readme = "README.md"
 authors = [
     { name = "Justo", email = "justomlo@proton.me" }
@@ -9,7 +9,6 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "customtkinter>=6.0.0",
-    "datasets>=5.0.1",
     "matplotlib>=3.11.1",
     "opencv-python>=5.0.0.93",
     "pillow>=12.3.0",
@@ -18,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-leafguardai = "leafguardai:main"
+leafguardai = "leafguardai.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.12.2,<0.13.0"]
