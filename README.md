@@ -1,3 +1,8 @@
+## Integrantes do Grupo
+Jean Victor Yoshida Lima <br/>
+João Pedro Cabrera Rodrigues Penna <br/>
+Nícolas Justo Melão
+
 # LeafGuardAI 🌿
 
 O LeafGuardAI é um projeto de deep learning focado na identificação de doenças em plantas através da análise de imagens de folhas, combinando um pipeline avançado de pré-processamento de visão computacional com uma arquitetura EfficientNet-B0 ajustada.
