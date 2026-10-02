@@ -1,10 +1,12 @@
 import customtkinter as ctk
 from customtkinter import filedialog
+from dotenv import load_dotenv
 from google import genai
 from PIL import Image
 
 from leafguardai.model.infer import format_class_name, load_classes, load_model, predict
 
+load_dotenv()
 client = genai.Client()
 
 class MainWindow(ctk.CTk):
@@ -57,6 +59,14 @@ class MainWindow(ctk.CTk):
                     wraplength=640,
                 )
         self.response_label.pack(padx=24, pady=12)
+
+        self.ai_label = ctk.CTkLabel(
+                            self,
+                            text="",
+                            justify="left",
+                            wraplength=640,
+                        )
+        self.ai_label.pack(padx=24, pady=12)
 
         self.change_theme_btn = ctk.CTkButton(
             self,
@@ -128,6 +138,7 @@ class MainWindow(ctk.CTk):
         self.result_label.configure(text="\n".join(lines))
         if not results:
             self.response_label.configure(text="Nenhum resultado foi encontrado.")
+            self.ai_label.configure(text="")
             return
 
         top_label, top_prob = results[0]
@@ -137,11 +148,10 @@ class MainWindow(ctk.CTk):
             "Tratamento: explique os principais métodos de tratamento de forma clara, com 2 a 3 frases."
             "Cuidados: informe 2 ou 3 cuidados importantes, de forma resumida."
             "Prevenção: explique 1 ou 2 medidas para evitar o reaparecimento ou disseminação da doença."
-            "Não adicione introduções, saudações, conclusões ou outras seções. Não omita nenhuma das três seções. Não mostre colchetes ou instruções do prompt. Mantenha o resultado informativo, mas sem textos longos ou explicações excessivamente técnicas."
-            "Insira ao final de todas respostas: Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado.")
+            "Não adicione introduções, saudações, conclusões ou outras seções. Não omita nenhuma das três seções. Não mostre colchetes ou instruções do prompt. Mantenha o resultado informativo, mas sem textos longos ou explicações excessivamente técnicas.")
         try:
             interaction = client.interactions.create(
-                model="gemini-3.8-flash",
+                model="gemini-3.7-flash",
                 input=prompt
             )
         except Exception:
@@ -153,6 +163,8 @@ class MainWindow(ctk.CTk):
             return
 
         self.response_label.configure(text=interaction.output_text)
+
+        self.ai_label.configure(text = "Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado.")
 
     def change_theme(self):
         if ctk.get_appearance_mode().lower() == "dark":
