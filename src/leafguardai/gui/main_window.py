@@ -1,10 +1,11 @@
 import customtkinter as ctk
 from customtkinter import filedialog
+from google import genai
 from PIL import Image
-from ollama import generate
 
 from leafguardai.model.infer import format_class_name, load_classes, load_model, predict
 
+client = genai.Client()
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -56,14 +57,6 @@ class MainWindow(ctk.CTk):
                     wraplength=640,
                 )
         self.response_label.pack(padx=24, pady=12)
-
-        self.ai_label = ctk.CTkLabel(
-                            self,
-                            text="",
-                            justify="left",
-                            wraplength=640,
-                        )
-        self.ai_label.pack(padx=24, pady=12)
 
         self.change_theme_btn = ctk.CTkButton(
             self,
@@ -144,10 +137,22 @@ class MainWindow(ctk.CTk):
             "Tratamento: explique os principais métodos de tratamento de forma clara, com 2 a 3 frases."
             "Cuidados: informe 2 ou 3 cuidados importantes, de forma resumida."
             "Prevenção: explique 1 ou 2 medidas para evitar o reaparecimento ou disseminação da doença."
-            "Não adicione introduções, saudações, conclusões ou outras seções. Não omita nenhuma das três seções. Não mostre colchetes ou instruções do prompt. Mantenha o resultado informativo, mas sem textos longos ou explicações excessivamente técnicas.")
-        response = generate("llama3.2:3b", prompt)
-        self.response_label.configure(text = response.response)
-        self.ai_label.configure(text = "Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado.")
+            "Não adicione introduções, saudações, conclusões ou outras seções. Não omita nenhuma das três seções. Não mostre colchetes ou instruções do prompt. Mantenha o resultado informativo, mas sem textos longos ou explicações excessivamente técnicas."
+            "Insira ao final de todas respostas: Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado.")
+        try:
+            interaction = client.interactions.create(
+                model="gemini-3.8-flash",
+                input=prompt
+            )
+        except Exception:
+            self.response_label.configure(
+                text="Não foi possível obter as orientações da IA agora. "
+                "Tente novamente em alguns instantes."
+            )
+            self.ai_label.configure(text="")
+            return
+
+        self.response_label.configure(text=interaction.output_text)
 
     def change_theme(self):
         if ctk.get_appearance_mode().lower() == "dark":
