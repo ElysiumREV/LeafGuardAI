@@ -164,8 +164,6 @@ class MainWindow(ctk.CTk):
             self.response_label.configure(text="Insira sua chave da API Gemini.")
             return
 
-        client = genai.Client(api_key=api_key)
-
         top_label, top_prob = results[0]
         top1 = f"{format_class_name(top_label)} — {top_prob * 100:.1f}%"
         prompt = (f"Explique o tratamento apenas da doença identificada como Top 1: {top1}. "
@@ -178,10 +176,15 @@ class MainWindow(ctk.CTk):
         # Inicia a consulta à IA em uma thread separada para não travar a interface
         self.response_label.configure(text="Consultando IA para orientações... Aguarde.")
         self.ai_label.configure(text="")
-        threading.Thread(target=self._fetch_ai_guidance, args=(prompt,), daemon=True).start()
+        threading.Thread(
+            target=self._fetch_ai_guidance,
+            args=(prompt, api_key),
+            daemon=True,
+        ).start()
 
-    def _fetch_ai_guidance(self, prompt):
+    def _fetch_ai_guidance(self, prompt, api_key):
         try:
+            client = genai.Client(api_key=api_key)
             interaction = client.interactions.create(
                 model="gemini-3.7-flash",
                 input=prompt
