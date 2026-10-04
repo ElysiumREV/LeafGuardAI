@@ -1,13 +1,10 @@
 import customtkinter as ctk
 from customtkinter import filedialog
-from dotenv import load_dotenv
 from google import genai
 from PIL import Image
+import threading
 
 from leafguardai.model.infer import format_class_name, load_classes, load_model, predict
-
-load_dotenv()
-client = genai.Client()
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -75,6 +72,26 @@ class MainWindow(ctk.CTk):
         )
         self.change_theme_btn.pack(padx=10, pady=16)
 
+        self.api_key_txtbox = ctk.CTkTextbox(
+            self,
+            width = 450,
+            height = 20,
+            corner_radius = 0
+        )
+
+        self.api_key_txtbox.pack(
+            padx=20,
+            pady=20,
+            
+        )
+
+        self.api_key_txtbox.insert(
+            "0.0",
+            "Insira a API Key"
+        )
+
+        
+
     def select_image(self):
         path = filedialog.askopenfilename(
             title="Escolher imagem",
@@ -141,6 +158,14 @@ class MainWindow(ctk.CTk):
             self.ai_label.configure(text="")
             return
 
+        api_key = self.api_key_txtbox.get("1.0", "end").strip()
+
+        if not api_key or api_key == "Insira a API Key":
+            self.response_label.configure(text="Insira sua chave da API Gemini.")
+            return
+
+        client = genai.Client(api_key=api_key)
+
         top_label, top_prob = results[0]
         top1 = f"{format_class_name(top_label)} — {top_prob * 100:.1f}%"
         prompt = (f"Explique o tratamento apenas da doença identificada como Top 1: {top1}. "
@@ -149,22 +174,29 @@ class MainWindow(ctk.CTk):
             "Cuidados: informe 2 ou 3 cuidados importantes, de forma resumida."
             "Prevenção: explique 1 ou 2 medidas para evitar o reaparecimento ou disseminação da doença."
             "Não adicione introduções, saudações, conclusões ou outras seções. Não omita nenhuma das três seções. Não mostre colchetes ou instruções do prompt. Mantenha o resultado informativo, mas sem textos longos ou explicações excessivamente técnicas.")
+
+        # Inicia a consulta à IA em uma thread separada para não travar a interface
+        self.response_label.configure(text="Consultando IA para orientações... Aguarde.")
+        self.ai_label.configure(text="")
+        threading.Thread(target=self._fetch_ai_guidance, args=(prompt,), daemon=True).start()
+
+    def _fetch_ai_guidance(self, prompt):
         try:
             interaction = client.interactions.create(
                 model="gemini-3.7-flash",
                 input=prompt
             )
+            # Atualiza a UI com o resultado
+            self.after(0, lambda: self.response_label.configure(text=interaction.output_text))
+            self.after(0, lambda: self.ai_label.configure(
+                text="Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado."
+            ))
         except Exception:
-            self.response_label.configure(
+            self.after(0, lambda: self.response_label.configure(
                 text="Não foi possível obter as orientações da IA agora. "
                 "Tente novamente em alguns instantes."
-            )
-            self.ai_label.configure(text="")
-            return
-
-        self.response_label.configure(text=interaction.output_text)
-
-        self.ai_label.configure(text = "Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado.")
+            ))
+            self.after(0, lambda: self.ai_label.configure(text=""))
 
     def change_theme(self):
         if ctk.get_appearance_mode().lower() == "dark":
