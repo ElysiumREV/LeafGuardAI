@@ -6,7 +6,6 @@ from PIL import Image
 
 from leafguardai.model.classifier import create_model
 from leafguardai.vision.transforms import get_eval_transforms
-from leafguardai.vision.processor import ImageProcessor
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 MODELS_DIR = PROJECT_ROOT / "models"
@@ -15,28 +14,7 @@ CLASSES_PATH = MODELS_DIR / "classes.json"
 
 
 def format_class_name(name: str) -> str:
-    """
-    Formats class names from 'Planta___Doenca' to a human-readable format.
-    Example: 'Apple___Apple_scab' -> 'Apple Scab'
-    """
-    if "___" not in name:
-        return name.replace("_", " ").capitalize()
-
-    # Split into plant and disease
-    plant, disease = name.split("___", 1)
-
-    # Clean disease name: replace underscores with spaces
-    disease_clean = disease.replace("_", " ")
-
-    # Avoid redundancy: If disease name starts with plant name, remove it
-    # Example: 'Apple_scab' -> 'Scab' when plant is 'Apple'
-    if disease_clean.lower().startswith(plant.lower()):
-        # Remove plant name and any trailing underscores/spaces
-        disease_clean = disease_clean[len(plant):].strip(" _-")
-
-    # Capitalize words
-    final_name = f"{plant} {disease_clean}".strip()
-    return " ".join(word.capitalize() for word in final_name.split())
+    return name.replace("___", " — ").replace("_", " ")
 
 
 def load_classes():
@@ -65,10 +43,8 @@ def load_model(num_classes, device):
 
 
 def preprocess_image(image_path):
-    processor = ImageProcessor()
-    image = processor.process(image_path)
-
     transform = get_eval_transforms()
+    image = Image.open(image_path).convert("RGB")
     tensor = transform(image)
     return tensor.unsqueeze(0)
 

@@ -2,7 +2,6 @@ import customtkinter as ctk
 from customtkinter import filedialog
 from google import genai
 from PIL import Image
-import threading
 
 from leafguardai.model.infer import format_class_name, load_classes, load_model, predict
 
@@ -174,29 +173,22 @@ class MainWindow(ctk.CTk):
             "Cuidados: informe 2 ou 3 cuidados importantes, de forma resumida."
             "Prevenção: explique 1 ou 2 medidas para evitar o reaparecimento ou disseminação da doença."
             "Não adicione introduções, saudações, conclusões ou outras seções. Não omita nenhuma das três seções. Não mostre colchetes ou instruções do prompt. Mantenha o resultado informativo, mas sem textos longos ou explicações excessivamente técnicas.")
-
-        # Inicia a consulta à IA em uma thread separada para não travar a interface
-        self.response_label.configure(text="Consultando IA para orientações... Aguarde.")
-        self.ai_label.configure(text="")
-        threading.Thread(target=self._fetch_ai_guidance, args=(prompt,), daemon=True).start()
-
-    def _fetch_ai_guidance(self, prompt):
         try:
             interaction = client.interactions.create(
                 model="gemini-3.7-flash",
                 input=prompt
             )
-            # Atualiza a UI com o resultado
-            self.after(0, lambda: self.response_label.configure(text=interaction.output_text))
-            self.after(0, lambda: self.ai_label.configure(
-                text="Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado."
-            ))
         except Exception:
-            self.after(0, lambda: self.response_label.configure(
+            self.response_label.configure(
                 text="Não foi possível obter as orientações da IA agora. "
                 "Tente novamente em alguns instantes."
-            ))
-            self.after(0, lambda: self.ai_label.configure(text=""))
+            )
+            self.ai_label.configure(text="")
+            return
+
+        self.response_label.configure(text=interaction.output_text)
+
+        self.ai_label.configure(text = "Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado.")
 
     def change_theme(self):
         if ctk.get_appearance_mode().lower() == "dark":

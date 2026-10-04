@@ -88,16 +88,6 @@ uv add <nome-do-pacote>
 
 O `uv` atualizará automaticamente os arquivos `pyproject.toml` e `uv.lock`.
 
-### Configurando a API do Gemini
-
-Para configurar a chave, crie um arquivo `.env` na raiz do projeto e adicione sua chave da API do Gemini:
-
-```env
-GOOGLE_API_KEY=sua_chave_aqui
-```
-
-Observação: a chave pode ser criada no site [Google AI Studio](https://aistudio.google.com/api-keys)
-
 ### Executando a GUI
 
 ```bash
