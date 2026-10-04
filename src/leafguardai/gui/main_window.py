@@ -1,9 +1,13 @@
 import customtkinter as ctk
 from customtkinter import filedialog
+from dotenv import load_dotenv
 from google import genai
 from PIL import Image
 
 from leafguardai.model.infer import format_class_name, load_classes, load_model, predict
+
+load_dotenv()
+client = genai.Client()
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -71,26 +75,6 @@ class MainWindow(ctk.CTk):
         )
         self.change_theme_btn.pack(padx=10, pady=16)
 
-        self.api_key_txtbox = ctk.CTkTextbox(
-            self,
-            width = 450,
-            height = 20,
-            corner_radius = 0
-        )
-
-        self.api_key_txtbox.pack(
-            padx=20,
-            pady=20,
-            
-        )
-
-        self.api_key_txtbox.insert(
-            "0.0",
-            "Insira a API Key"
-        )
-
-        
-
     def select_image(self):
         path = filedialog.askopenfilename(
             title="Escolher imagem",
@@ -156,14 +140,6 @@ class MainWindow(ctk.CTk):
             self.response_label.configure(text="Nenhum resultado foi encontrado.")
             self.ai_label.configure(text="")
             return
-
-        api_key = self.api_key_txtbox.get("1.0", "end").strip()
-
-        if not api_key or api_key == "Insira a API Key":
-            self.response_label.configure(text="Insira sua chave da API Gemini.")
-            return
-
-        client = genai.Client(api_key=api_key)
 
         top_label, top_prob = results[0]
         top1 = f"{format_class_name(top_label)} — {top_prob * 100:.1f}%"
