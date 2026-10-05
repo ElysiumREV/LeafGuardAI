@@ -1,28 +1,33 @@
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+PRIMARY_DATASET_PATH = PROJECT_ROOT / "data" / "raw" / "PlantVillage" / "color"
+
 DATASET_PATH = [
-    PROJECT_ROOT / "data" / "raw" / "PlantVillage" / "color",
+    PRIMARY_DATASET_PATH,
     PROJECT_ROOT / "data" / "raw" / "NewPlantDataset" / "train",
     PROJECT_ROOT / "data" / "raw" / "NewPlantDataset" / "train2"
 ]
 
 
 def ensure_dataset_exists():
-    for path in DATASET_PATH:
-        if not path.is_dir():
+        if not PRIMARY_DATASET_PATH.is_dir():
             raise FileNotFoundError(
-                f"Dataset não encontrado em {path}. "
-                "Verifique se as pastas dos datasets estão nos caminhos corretos. Veja o README."
+                f"Dataset principal não encontrado em {PRIMARY_DATASET_PATH}. "
+                "Verifique se o PlantVillage está no caminho correto. Veja o README."
             )
 
+def get_available_dataset_paths():
+    ensure_dataset_exists()
+    return [path for path in DATASET_PATH if path.is_dir()]
 
 def get_classes():
     ensure_dataset_exists()
     classes = set()
-    for path in DATASET_PATH:
+    for path in get_available_dataset_paths():
         for folder in path.iterdir():
-            if folder.is_dir():
+            if folder.is_dir() and "___" in folder.name:
                 classes.add(folder.name)
     return sorted(list(classes))
 
@@ -31,7 +36,7 @@ def get_images_by_class():
     ensure_dataset_exists()
     dataset = []
 
-    for path in DATASET_PATH:
+    for path in get_available_dataset_paths():
         for folder in sorted(path.iterdir()):
             if not folder.is_dir():
                 continue
