@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from os import PathLike
 from PIL import Image
 from typing import Union, Tuple, Optional
 
@@ -26,7 +27,7 @@ class ImageProcessor:
         self.contrast = contrast
         self.sharpen = sharpen
 
-    def process(self, image_source: Union[str, np.ndarray]) -> Image.Image:
+    def process(self, image_source: Union[str, PathLike, np.ndarray]) -> Image.Image:
         """
         Main entry point for processing.
         Args:
@@ -35,8 +36,8 @@ class ImageProcessor:
             A processed PIL Image in RGB format.
         """
         # 1. Loading
-        if isinstance(image_source, str):
-            image = cv2.imread(image_source, cv2.IMREAD_COLOR)
+        if isinstance(image_source, (str, PathLike)):
+            image = cv2.imread(str(image_source), cv2.IMREAD_COLOR)
             if image is None:
                 raise FileNotFoundError(f"Could not read image at path: {image_source}")
         else:
