@@ -27,7 +27,9 @@ The image processing pipeline is designed to maximize the extraction of relevant
     *   Application of a Gaussian blur combined with the original image to create a sharpening effect, emphasizing edges and leaf vein structures.
 
 6.  **Dimensional Normalization:** 
-    *   Final resize to **256x256 pixels** using `INTER_AREA` interpolation for compatibility with the neural network input.
+    *   Final resize to **256x256 pixels** using `INTER_AREA` interpolation; the evaluation transforms then center-crop to **224x224** and normalize the colors for the neural network input.
+
+> **Important:** the `ImageProcessor` must be used the same way in training and inference. The model learns from images in the form it saw them; applying the processor only at inference dropped accuracy from 99% to 64% on PlantVillage leaves. Training therefore records in `preprocessing.json` whether the processor was used (`--use-processor`), and the app automatically repeats the same choice. Without the processor, images are only resized, center-cropped and normalized.
 
 ## 🤖 AI Implementation & Integration
 
@@ -35,7 +37,8 @@ The project integrates advanced AI concepts, focusing on **Deep Learning** and *
 
 ### Full Project Pipeline:
 **A. Data Management:**
-*   **Stratified Split:** Data is divided into **Train, Validation, and Test** sets while maintaining class distribution.
+*   **Stratified Split by Leaf:** Data is divided into **Train, Validation, and Test** sets while maintaining class distribution; copies and rotated versions of the same photo always stay in the same set.
+*   **Field Photos:** Besides PlantVillage (lab photos), training uses real-world photos from **PlantDoc**, with their own train/validation/test split.
 *   **Class Balancing:** Use of **class weights** in the loss function to handle imbalanced datasets, penalizing errors in minority classes more heavily.
 
 **B. Model Architecture:**
@@ -50,7 +53,7 @@ The project integrates advanced AI concepts, focusing on **Deep Learning** and *
 
 **D. Acceleration and Stability:**
 *   **AMP (Automatic Mixed Precision):** Used to reduce VRAM consumption and accelerate GPU processing.
-*   **Early Stopping:** Monitors validation accuracy to halt training when improvement ceases, preventing overtraining.
+*   **Early Stopping:** Monitors validation accuracy (on field photos, when PlantDoc is present) to halt training when improvement ceases, preventing overtraining.
 
 **E. Evaluation Metrics:**
 *   **Confusion Matrix:** To analyze inter-class confusion.
@@ -99,11 +102,11 @@ The GUI classifies a selected leaf image with the trained checkpoint in `models/
 
 ## 📁 Dataset
 
-This project uses the PlantVillage dataset.
+This project uses two datasets: **PlantVillage** (leaf photos taken in a lab) and **PlantDoc** (leaf photos taken in the field).
 
-The dataset is not included in this repository due to its size.
+The datasets are not included in this repository due to their size.
 
-You can download it from the original [repository.](https://github.com/spMohanty/PlantVillage-Dataset)
+You can download PlantVillage from the original [repository.](https://github.com/spMohanty/PlantVillage-Dataset)
 Only the image dataset is required. After downloading, place the color/ directory inside the following path:
 ```
 LeafGuardAI/
@@ -123,6 +126,31 @@ data/
             └── ...
 ```
 
+PlantDoc can be downloaded from the original [repository](https://github.com/pratikkayal/PlantDoc-Dataset) with the script below, which already places the images in the correct path:
+```bash
+uv run python scripts/download_plantdoc.py
+```
+```
+LeafGuardAI/
+└── data/
+    └── raw/
+        └── PlantDoc/
+```
+The expected structure is:
+```
+data/
+└── raw/
+    └── PlantDoc/
+        ├── train/
+        │   ├── Apple Scab Leaf/
+        │   ├── Tomato leaf/
+        │   └── ...
+        └── test/
+            └── ...
+```
+
+PlantDoc: Singh, D. et al. *PlantDoc: A Dataset for Visual Plant Disease Detection*. CODS-COMAD 2020 (CC BY 4.0 license).
+
 ## 🏋️ Training
 
 ```bash
@@ -135,15 +163,29 @@ Useful flags:
 uv run python scripts/train.py --epochs-stage1 10 --epochs-stage2 15 --patience 5
 ```
 
+Other options:
+
+- `--output-dir folder/` — writes the artifacts to another folder (the default `models/` replaces the model used by the app).
+- `--background-prob 0.5` — replaces the background of part of the PlantVillage leaves using the masks from the PlantVillage `segmented/` folder (place it at `data/raw/PlantVillage/segmented/`). Off by default: it made the model much more robust to artificial backgrounds, but with PlantDoc in training it did not improve field photos and makes training ~3× slower.
+- `--field-share 0.4` — fraction of each epoch drawn from PlantDoc field photos; `--no-plantdoc` ignores PlantDoc.
+- `--use-processor` — also applies the `ImageProcessor` during training (see the note in the pipeline section).
+
+How training works:
+
+- **Split by leaf:** copies, rotations and flips of the same photo always stay in the same set (train, validation or test), so the test set never contains images already seen in training.
+- **Checkpoint selection:** when PlantDoc is present, the best model is chosen by accuracy on the validation field photos.
+- **Consistent preprocessing:** training writes `preprocessing.json` next to the model, and the app applies exactly the same preprocessing at inference. Checkpoints without this file keep the original behavior (with `ImageProcessor`).
+
 Artifacts are written to `models/`:
 
-- `best_model.pt` — best checkpoint by validation accuracy
+- `best_model.pt` — best checkpoint (by validation accuracy, or field validation accuracy with PlantDoc)
 - `classes.json` — class index mapping
-- `split.json` — stratified train/val/test paths
+- `preprocessing.json` — whether the `ImageProcessor` was used in training
+- `split.json` — train/val/test paths
 - `history.json` — per-epoch metrics
-- `metrics.json` — final test metrics
-- `classification_report.txt` — per-class precision/recall/F1
-- `confusion_matrix.png`
+- `metrics.json` — final test metrics (includes `field_test_accuracy` with PlantDoc)
+- `classification_report.txt` / `classification_report_campo.txt` — per-class precision/recall/F1
+- `confusion_matrix.png` / `confusion_matrix_campo.png`
 
 ### Training with AMD GPU (ROCm + Docker)
 

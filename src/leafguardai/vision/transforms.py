@@ -24,6 +24,24 @@ def get_train_transforms():
     )
 
 
+def get_field_train_transforms():
+    # Fotos de campo: recortes mais variados (a folha nem sempre ocupa o quadro todo).
+    return transforms.Compose(
+        [
+            transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.4, 1.0)),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
+            transforms.ColorJitter(
+                brightness=0.2,
+                contrast=0.2,
+                saturation=0.2,
+            ),
+            transforms.ToTensor(),
+            transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+        ]
+    )
+
+
 def get_eval_transforms():
     return transforms.Compose(
         [

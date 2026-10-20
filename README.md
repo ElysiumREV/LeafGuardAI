@@ -32,7 +32,9 @@ O pipeline de processamento de imagens foi projetado para maximizar a extração
     *   Aplicação de um desfoque Gaussiano combinado com a imagem original para criar um efeito de nitidez, enfatizando bordas e a estrutura vascular da folha.
 
 6.  **Normalização Dimensional:** 
-    *   Redimensionamento final para **256x256 pixels** utilizando interpolação `INTER_AREA` para compatibilidade com a entrada da rede neural.
+    *   Redimensionamento final para **256x256 pixels** utilizando interpolação `INTER_AREA`; em seguida, os transforms de avaliação recortam o centro em **224x224** e normalizam as cores para a entrada da rede neural.
+
+> **Importante:** o `ImageProcessor` precisa ser usado do mesmo jeito no treino e na inferência. O modelo aprende com imagens no formato em que as viu; aplicar o processor só na inferência derrubou a acurácia de 99% para 64% em folhas do PlantVillage. Por isso, o treino grava em `preprocessing.json` se o processor foi usado (`--use-processor`), e o app repete automaticamente a mesma escolha. Sem o processor, a imagem passa apenas por redimensionamento, recorte central e normalização.
 
 ## 🤖 Implementação e Integração de IA
 
@@ -40,7 +42,8 @@ O projeto integra conceitos avançados de Inteligência Artificial, focando em *
 
 ### Pipeline Completo do Projeto:
 **A. Gestão de Dados:**
-*   **Split Estratificado:** Os dados são divididos em conjuntos de **Treino, Validação e Teste**, mantendo a distribuição original de classes.
+*   **Split Estratificado por Folha:** Os dados são divididos em conjuntos de **Treino, Validação e Teste**, mantendo a distribuição de classes; cópias e versões giradas da mesma foto ficam sempre no mesmo conjunto.
+*   **Fotos de Campo:** Além do PlantVillage (fotos de laboratório), o treino usa fotos reais do **PlantDoc**, com divisão própria de treino, validação e teste.
 *   **Balanceamento de Classes:** Implementação de **pesos por classe** (*class weights*) na função de perda para lidar com datasets desbalanceados, penalizando mais erros em classes minoritárias.
 
 **B. Arquitetura do Modelo:**
@@ -55,7 +58,7 @@ O projeto integra conceitos avançados de Inteligência Artificial, focando em *
 
 **D. Aceleração e Estabilidade:**
 *   **AMP (Automatic Mixed Precision):** Utilizado para reduzir o consumo de VRAM e acelerar o processamento em GPUs.
-*   **Early Stopping:** Monitoramento da acurácia de validação para interromper o treino quando a melhora cessa, evitando o sobreajuste.
+*   **Early Stopping:** Monitoramento da acurácia de validação (nas fotos de campo, quando o PlantDoc está presente) para interromper o treino quando a melhora cessa, evitando o sobreajuste.
 
 **E. Métricas de Avaliação:**
 *   **Matriz de Confusão:** Para analisar confusões entre classes semelhantes.
@@ -108,11 +111,11 @@ A interface gráfica classifica a imagem de uma folha selecionada utilizando o c
 
 ## 📁 Dataset
 
-Este projeto utiliza o dataset PlantVillage.
+Este projeto utiliza dois datasets: o **PlantVillage** (fotos de folhas em laboratório) e o **PlantDoc** (fotos de folhas em campo).
 
-O dataset não está incluído neste repositório devido ao seu tamanho.
+Os datasets não estão incluídos neste repositório devido ao seu tamanho.
 
-Você pode baixá-lo no [repositório original.](https://github.com/spMohanty/PlantVillage-Dataset)
+Você pode baixar o PlantVillage no [repositório original.](https://github.com/spMohanty/PlantVillage-Dataset)
 Apenas o conjunto de imagens é necessário. Após baixar, coloque o diretório `color/` no seguinte caminho:
 ```
 LeafGuardAI/
@@ -132,6 +135,31 @@ data/
             └── ...
 ```
 
+O PlantDoc pode ser baixado do [repositório original](https://github.com/pratikkayal/PlantDoc-Dataset) com o script abaixo, que já coloca as imagens no caminho correto:
+```bash
+uv run python scripts/download_plantdoc.py
+```
+```
+LeafGuardAI/
+└── data/
+    └── raw/
+        └── PlantDoc/
+```
+A estrutura esperada é:
+```
+data/
+└── raw/
+    └── PlantDoc/
+        ├── train/
+        │   ├── Apple Scab Leaf/
+        │   ├── Tomato leaf/
+        │   └── ...
+        └── test/
+            └── ...
+```
+
+PlantDoc: Singh, D. et al. *PlantDoc: A Dataset for Visual Plant Disease Detection*. CODS-COMAD 2020 (licença CC BY 4.0).
+
 ## 🏋️ Treinamento
 
 ```bash
@@ -144,15 +172,29 @@ Flags úteis:
 uv run python scripts/train.py --epochs-stage1 10 --epochs-stage2 15 --patience 5
 ```
 
+Outras opções:
+
+- `--output-dir pasta/` — grava os artefatos em outra pasta (o padrão `models/` substitui o modelo usado pelo app).
+- `--background-prob 0.5` — troca o fundo de parte das folhas do PlantVillage usando as máscaras da pasta `segmented/` do PlantVillage (coloque-a em `data/raw/PlantVillage/segmented/`). Desligada por padrão: deixou o modelo muito mais robusto a fundos artificiais, mas com o PlantDoc no treino não melhorou as fotos de campo e deixa o treino ~3× mais lento.
+- `--field-share 0.4` — fração de cada época vinda das fotos de campo do PlantDoc; `--no-plantdoc` ignora o PlantDoc.
+- `--use-processor` — aplica o `ImageProcessor` também no treino (veja a nota na seção do pipeline).
+
+Como o treino funciona:
+
+- **Split por folha:** cópias, giros e espelhamentos da mesma foto ficam sempre na mesma parte (treino, validação ou teste), para que o teste não contenha imagens já vistas no treino.
+- **Escolha do checkpoint:** com o PlantDoc presente, o melhor modelo é escolhido pela acurácia nas fotos de campo da validação.
+- **Pré-processamento consistente:** o treino grava `preprocessing.json` junto do modelo, e o app aplica exatamente o mesmo pré-processamento na inferência. Usar na inferência um pré-processamento diferente do usado no treino derruba a acurácia (no checkpoint antigo, ligar o `ImageProcessor` só na inferência levou de 99% para 64% em folhas do PlantVillage). Checkpoints sem esse arquivo mantêm o comportamento original (com `ImageProcessor`).
+
 Os artefatos são gravados em `models/`:
 
-- `best_model.pt` — melhor checkpoint por acurácia de validação
+- `best_model.pt` — melhor checkpoint (por acurácia de validação, ou de validação de campo com o PlantDoc)
 - `classes.json` — mapeamento de índice de classes
-- `split.json` — caminhos estratificados de treino/val/teste
+- `preprocessing.json` — se o `ImageProcessor` foi usado no treino
+- `split.json` — caminhos de treino/val/teste
 - `history.json` — métricas por época
-- `metrics.json` — métricas finais de teste
-- `classification_report.txt` — precisão/recall/F1 por classe
-- `confusion_matrix.png`
+- `metrics.json` — métricas finais de teste (inclui `field_test_accuracy` com o PlantDoc)
+- `classification_report.txt` / `classification_report_campo.txt` — precisão/recall/F1 por classe
+- `confusion_matrix.png` / `confusion_matrix_campo.png`
 
 ### Treinamento com GPU AMD (ROCm + Docker)
 
