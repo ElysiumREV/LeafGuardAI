@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 import torch
-from PIL import Image
+from PIL import Image, ImageOps
 
 from leafguardai.model.classifier import create_model
 from leafguardai.vision.transforms import get_eval_transforms
@@ -12,6 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 MODELS_DIR = PROJECT_ROOT / "models"
 CHECKPOINT_PATH = MODELS_DIR / "best_model.pt"
 CLASSES_PATH = MODELS_DIR / "classes.json"
+PREPROCESSING_PATH = MODELS_DIR / "preprocessing.json"
 
 
 def format_class_name(name: str) -> str:
@@ -64,9 +65,28 @@ def load_model(num_classes, device):
     return model
 
 
-def preprocess_image(image_path):
-    processor = ImageProcessor()
-    image = processor.process(image_path)
+def uses_processor():
+    """Se a inferência deve aplicar o ImageProcessor.
+
+    scripts/train.py grava models/preprocessing.json com o pré-processamento usado no
+    treino, e a inferência repete exatamente o mesmo (usar um diferente derruba a acurácia:
+    99% -> 64% em folhas do PlantVillage). Checkpoints antigos, sem esse arquivo, mantêm o
+    comportamento original do app (com processor).
+    """
+    if not PREPROCESSING_PATH.exists():
+        return True
+    with open(PREPROCESSING_PATH, encoding="utf-8") as file:
+        return bool(json.load(file).get("use_processor", False))
+
+
+def preprocess_image(image_path, use_processor=None):
+    if use_processor is None:
+        use_processor = uses_processor()
+    if use_processor:
+        image = ImageProcessor().process(image_path)
+    else:
+        with Image.open(image_path) as file:
+            image = ImageOps.exif_transpose(file).convert("RGB")
 
     transform = get_eval_transforms()
     tensor = transform(image)
