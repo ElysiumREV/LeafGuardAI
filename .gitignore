@@ -219,9 +219,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-data/raw
-data/processed
-data/test
+# Datasets e imagens de teste (baixados/locais, nunca versionados).
+# A barra inicial limita à pasta data/ da raiz (não ignora src/leafguardai/data/).
+/data/
 
 #Trained models
 models/
