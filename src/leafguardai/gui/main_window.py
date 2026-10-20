@@ -158,13 +158,19 @@ class MainWindow(ctk.CTk):
             self.ai_label.configure(text="")
             return
 
+        top_label, top_prob = results[0]
+
+        if top_label.lower().endswith("___healthy"):
+            self.response_label.configure(text="A folha foi classificada como saudável. Nenhuma doença foi detectada.")
+            self.ai_label.configure(text="")
+            return
+
         api_key = self.api_key_txtbox.get("1.0", "end").strip()
 
         if not api_key or api_key == "Insira a API Key":
             self.response_label.configure(text="Insira sua chave da API Gemini.")
             return
 
-        top_label, top_prob = results[0]
         top1 = f"{format_class_name(top_label)} — {top_prob * 100:.1f}%"
         prompt = (f"Explique o tratamento apenas da doença identificada como Top 1: {top1}. "
             "Escreva em português e siga exatamente esta estrutura: "
