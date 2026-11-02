@@ -11,8 +11,8 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from leafguardai.data.dataset import PlantDataset
 from leafguardai.data.loader import get_classes, get_images_by_class
-from leafguardai.data.plantdoc import get_plantdoc_samples
-from leafguardai.data.split import create_dataloaders, save_split, split_samples
+from leafguardai.data.field import FIELD_SOURCES, get_field_samples
+from leafguardai.data.split import create_dataloaders, save_split, split_by_group_hash, split_samples
 from leafguardai.model.classifier import (
     create_model,
     freeze_features,
@@ -56,15 +56,22 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Treina o classificador LeafGuardAI (EfficientNet-B0)."
     )
-    parser.add_argument("--epochs-stage1", type=int, default=10)
-    parser.add_argument("--epochs-stage2", type=int, default=15)
+    # Padrões do estágio 2 (rede inteira, lr 1e-4, até 25 épocas): com fotos de campo no treino,
+    # levaram o acerto em campo de 72,7% para 78,3% em relação a descongelar só 3 blocos com lr 1e-5.
+    parser.add_argument("--epochs-stage1", type=int, default=5)
+    parser.add_argument("--epochs-stage2", type=int, default=25)
     parser.add_argument("--patience", type=int, default=5)
     parser.add_argument("--min-delta", type=float, default=0.001)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--stage2-lr", type=float, default=1e-5)
+    parser.add_argument("--stage2-lr", type=float, default=1e-4)
     parser.add_argument("--stage2-head-lr", type=float, default=1e-4)
-    parser.add_argument("--unfreeze-blocks", type=int, default=3)
+    parser.add_argument(
+        "--unfreeze-blocks",
+        type=int,
+        default=9,
+        help="Quantos blocos finais do backbone treinar no estágio 2 (a EfficientNet-B0 tem 9: 9 = rede inteira).",
+    )
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--top-k", type=int, default=3)
@@ -77,19 +84,25 @@ def parse_args():
         default=0.0,
         help=(
             "Probabilidade de trocar o fundo de uma folha do PlantVillage (ex.: 0.5). Desligada por "
-            "padrão: com o PlantDoc no treino não melhorou as fotos de campo e deixa a época ~3x mais lenta."
+            "padrão: com fotos de campo no treino não melhorou o acerto em campo e deixa a época ~3x mais lenta."
         ),
     )
     parser.add_argument(
         "--field-share",
         type=float,
         default=0.4,
-        help="Fração de cada época vinda das fotos de campo (PlantDoc), se baixado.",
+        help="Fração de cada época vinda das fotos de campo (data/raw/field), se baixadas.",
     )
     parser.add_argument(
-        "--no-plantdoc",
+        "--no-field",
         action="store_true",
-        help="Não usa o PlantDoc mesmo que ele esteja em data/raw/PlantDoc.",
+        help="Não usa as fotos de campo mesmo que estejam em data/raw/field.",
+    )
+    parser.add_argument(
+        "--field-datasets",
+        nargs="+",
+        choices=list(FIELD_SOURCES),
+        help="Usa só estes datasets de campo (padrão: todos os baixados).",
     )
     parser.add_argument(
         "--use-processor",
@@ -291,12 +304,16 @@ def main():
         print("Nenhuma imagem encontrada. Verifique data/raw/PlantVillage/color/.", flush=True)
         return
 
-    field_samples = [] if args.no_plantdoc else get_plantdoc_samples()
+    field_samples = [] if args.no_field else get_field_samples(datasets=args.field_datasets)
     if field_samples:
-        print(f"   -> PlantDoc (fotos de campo): {len(field_samples)} imagens", flush=True)
+        covered = len({sample["label"] for sample in field_samples})
+        print(
+            f"   -> fotos de campo: {len(field_samples)} imagens, cobrindo {covered} de {len(classes)} classes",
+            flush=True,
+        )
     else:
         print(
-            "   -> PlantDoc não encontrado: treinando só com PlantVillage. "
+            "   -> nenhuma foto de campo em data/raw/field: treinando só com PlantVillage. "
             "Fotos reais tendem a ter acurácia baixa (veja o README).",
             flush=True,
         )
@@ -306,7 +323,7 @@ def main():
         samples,
         seed=args.seed,
     )
-    field_train, field_validation, field_test = split_samples(
+    field_train, field_validation, field_test = split_by_group_hash(
         field_samples,
         train_ratio=0.60,
         validation_ratio=0.15,
@@ -436,7 +453,7 @@ def main():
         **common,
     )
 
-    print("\n5. Estágio 2 — descongela os últimos blocos do backbone...", flush=True)
+    print(f"\n5. Estágio 2 — descongela os últimos {args.unfreeze_blocks} blocos do backbone...", flush=True)
     if checkpoint_path.exists():
         state_dict = torch.load(checkpoint_path, map_location=device, weights_only=True)
         model.load_state_dict(state_dict)
@@ -493,7 +510,7 @@ def main():
         field_result = write_test_report(
             "campo", model, field_test_loader, criterion, device, classes, args.top_k, output_dir
         )
-        # O PlantDoc cobre 28 das 38 classes; por isso não registramos macro-F1 sobre 38 classes.
+        # As fotos de campo não cobrem todas as 38 classes; por isso não registramos macro-F1 sobre 38 classes.
         metrics["field_test_accuracy"] = field_result.accuracy
         metrics[f"field_test_top{args.top_k}"] = field_result.topk_accuracy
         metrics["field_test_size"] = len(field_test)

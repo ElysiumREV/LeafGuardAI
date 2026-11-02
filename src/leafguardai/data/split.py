@@ -1,3 +1,4 @@
+import hashlib
 import json
 import random
 import re
@@ -64,6 +65,36 @@ def split_samples(
     rng.shuffle(validation_samples)
     rng.shuffle(test_samples)
 
+    return train_samples, validation_samples, test_samples
+
+
+def split_by_group_hash(
+    samples,
+    train_ratio=0.60,
+    validation_ratio=0.15,
+    test_ratio=0.25,
+    seed=42,
+):
+    """Split estável: a parte de cada grupo depende só do nome do grupo (hash), não de quais outras
+    amostras existem. Assim, acrescentar um dataset não muda a parte das fotos dos outros, e
+    modelos treinados com conjuntos diferentes podem ser comparados no mesmo teste."""
+    if abs(train_ratio + validation_ratio + test_ratio - 1.0) > 1e-6:
+        raise ValueError("As proporções precisam somar 1.0")
+
+    train_samples, validation_samples, test_samples = [], [], []
+    for sample in samples:
+        group = sample.get("group") or str(sample["image"])
+        digest = hashlib.sha1(f"{seed}:{group}".encode("utf-8")).hexdigest()
+        position = int(digest[:8], 16) / 0xFFFFFFFF
+        if position < train_ratio:
+            train_samples.append(sample)
+        elif position < train_ratio + validation_ratio:
+            validation_samples.append(sample)
+        else:
+            test_samples.append(sample)
+
+    rng = random.Random(seed)
+    rng.shuffle(train_samples)
     return train_samples, validation_samples, test_samples
 
 
