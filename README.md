@@ -5,11 +5,24 @@ Nícolas Justo Melão
 
 # LeafGuardAI 🌿
 
-O LeafGuardAI é um projeto de deep learning focado na identificação de doenças em plantas através da análise de imagens de folhas, combinando um pipeline avançado de pré-processamento de visão computacional com uma arquitetura EfficientNet-B0 ajustada.
+O LeafGuardAI é um projeto de deep learning focado na identificação de doenças em plantas através da análise de imagens de folhas, usando uma arquitetura EfficientNet-B0 ajustada com fotos de laboratório (PlantVillage) e fotos reais de campo. O projeto também inclui um pipeline opcional de pré-processamento de visão computacional (`ImageProcessor`).
 
 ## 🛠️ Pipeline de Processamento de Imagens
 
-O pipeline de processamento de imagens foi projetado para maximizar a extração de características relevantes da folha, minimizando a interferência de ruídos e variações de iluminação. O fluxo consiste nas seguintes etapas sequenciais:
+### Pipeline padrão (treino e inferência)
+
+Por padrão, cada imagem passa pelas mesmas etapas no treino e no app (`src/leafguardai/vision/transforms.py` e `src/leafguardai/model/infer.py`):
+
+1.  **Leitura:** a imagem é aberta em RGB, corrigindo a rotação de fotos de celular (orientação EXIF).
+2.  **Redimensionamento:** o menor lado vai para **256 pixels**, mantendo a proporção.
+3.  **Recorte central:** recorte de **224x224 pixels**, o tamanho de entrada da EfficientNet-B0.
+4.  **Normalização:** os canais RGB são normalizados com a média e o desvio padrão do ImageNet.
+
+No treino, as etapas 2 e 3 são substituídas por variações aleatórias (aumento de dados): recortes de tamanho e posição variados, espelhamento horizontal, rotação de até 15° e variação de brilho, contraste e saturação.
+
+### `ImageProcessor` (opcional)
+
+O `ImageProcessor` (`src/leafguardai/vision/processor.py`) é um pipeline de realce projetado para destacar características da folha e reduzir ruídos e variações de iluminação. Quando ativado com `--use-processor` no treino, ele é aplicado antes das etapas acima, no treino e no app. O fluxo consiste nas seguintes etapas sequenciais:
 
 1.  **Segmentação de Folha (Extração de ROI):** 
     *   Conversão do espaço de cores BGR para **HSV** (*Hue, Saturation, Value*).
@@ -32,7 +45,9 @@ O pipeline de processamento de imagens foi projetado para maximizar a extração
     *   Aplicação de um desfoque Gaussiano combinado com a imagem original para criar um efeito de nitidez, enfatizando bordas e a estrutura vascular da folha.
 
 6.  **Normalização Dimensional:** 
-    *   Redimensionamento final para **256x256 pixels** utilizando interpolação `INTER_AREA` para compatibilidade com a entrada da rede neural.
+    *   Redimensionamento final para **256x256 pixels** utilizando interpolação `INTER_AREA`; em seguida, os transforms de avaliação recortam o centro em **224x224** e normalizam as cores para a entrada da rede neural.
+
+> **Importante:** o `ImageProcessor` precisa ser usado do mesmo jeito no treino e na inferência. O modelo aprende com imagens no formato em que as viu; aplicar o processor só na inferência derrubou a acurácia de 99% para 64% em folhas do PlantVillage. Por isso, o treino grava em `preprocessing.json` se o processor foi usado (`--use-processor`), e o app repete automaticamente a mesma escolha. Nos nossos testes com fotos de campo, treinar sem o processor deu mais acerto (cerca de 60% contra 49%) e deixa a análise mais rápida, por isso ele vem desligado por padrão. Checkpoints antigos, sem `preprocessing.json`, continuam sendo usados com o processor.
 
 ## 🤖 Implementação e Integração de IA
 
@@ -40,7 +55,9 @@ O projeto integra conceitos avançados de Inteligência Artificial, focando em *
 
 ### Pipeline Completo do Projeto:
 **A. Gestão de Dados:**
-*   **Split Estratificado:** Os dados são divididos em conjuntos de **Treino, Validação e Teste**, mantendo a distribuição original de classes.
+*   **Split Estratificado por Folha:** As fotos do PlantVillage são divididas em **Treino, Validação e Teste** (70% / 15% / 15%), mantendo a distribuição de classes; cópias e versões giradas da mesma foto ficam sempre no mesmo conjunto.
+*   **Fotos de Campo:** Além do PlantVillage (fotos de laboratório), o treino usa fotos reais de vários datasets de campo, divididas à parte (60% / 15% / 25%). A divisão é estável: cada foto cai sempre no mesmo conjunto, mesmo que outros datasets sejam adicionados. Fotos repetidas entre datasets são agrupadas, e cópias de imagens do PlantVillage, fotos iguais às de `data/external_test` e arquivos corrompidos são descartados.
+*   **Mistura por Época:** Como há muito menos fotos de campo, elas são reamostradas para formar cerca de **40%** de cada época (`--field-share`).
 *   **Balanceamento de Classes:** Implementação de **pesos por classe** (*class weights*) na função de perda para lidar com datasets desbalanceados, penalizando mais erros em classes minoritárias.
 
 **B. Arquitetura do Modelo:**
@@ -48,19 +65,20 @@ O projeto integra conceitos avançados de Inteligência Artificial, focando em *
 *   **Transfer Learning:** Utilização de pesos pré-treinados no ImageNet para aproveitar a capacidade da rede de reconhecer formas e texturas genéricas.
 
 **C. Estratégia de Treinamento (Multi-estágio):**
-1.  **Estágio 1 (Warm-up):** O *backbone* da rede é congelado e apenas a camada de classificação (*head*) é treinada, evitando a destruição de pesos pré-treinados.
-2.  **Estágio 2 (Fine-Tuning):** Descongelamento dos últimos blocos do *backbone* com uma taxa de aprendizado reduzida ($\text{lr} \approx 10^{-5}$) para especialização nos padrões botânicos.
+1.  **Estágio 1 (Warm-up):** O *backbone* da rede é congelado e apenas a camada de classificação (*head*) é treinada ($\text{lr} = 10^{-3}$, até 5 épocas), evitando a destruição de pesos pré-treinados.
+2.  **Estágio 2 (Fine-Tuning):** Descongelamento da rede inteira (os 9 blocos do *backbone*) com taxa de aprendizado $\text{lr} = 10^{-4}$, por até 25 épocas, para adaptar todas as camadas às fotos de folhas, inclusive de campo. Use `--unfreeze-blocks` para descongelar menos blocos.
 *   **Otimização:** Otimizador **Adam** com escalonador **ReduceLROnPlateau**.
-*   **Regularização:** **Label Smoothing** ($0.1$) para prevenir *overfitting* e melhorar a generalização.
+*   **Regularização:** **Label Smoothing** ($0.1$) e aumento de dados (recortes, espelhamento, rotação e variação de cor) para prevenir *overfitting* e melhorar a generalização.
 
 **D. Aceleração e Estabilidade:**
 *   **AMP (Automatic Mixed Precision):** Utilizado para reduzir o consumo de VRAM e acelerar o processamento em GPUs.
-*   **Early Stopping:** Monitoramento da acurácia de validação para interromper o treino quando a melhora cessa, evitando o sobreajuste.
+*   **Early Stopping:** Monitoramento da acurácia de validação (nas fotos de campo, quando estão presentes) para interromper cada estágio após 5 épocas sem melhora, evitando o sobreajuste. O melhor checkpoint é o de maior acurácia nessa validação.
 
 **E. Métricas de Avaliação:**
 *   **Matriz de Confusão:** Para analisar confusões entre classes semelhantes.
 *   **Relatório de Classificação:** Cálculo de **Precisão**, **Recall** e **Macro-F1 Score**.
 *   **Acurácia Top-K:** Avalia se a classe correta está entre as $K$ previsões mais prováveis.
+*   **Teste em Fotos de Campo:** Além do teste no PlantVillage, o modelo é avaliado separadamente nas fotos de campo de teste, que representam melhor o uso real do app.
 
 ---
 
@@ -108,11 +126,11 @@ A interface gráfica classifica a imagem de uma folha selecionada utilizando o c
 
 ## 📁 Dataset
 
-Este projeto utiliza o dataset PlantVillage.
+Este projeto utiliza o **PlantVillage** (fotos de folhas em laboratório) e um conjunto de **datasets de fotos de folhas em campo**.
 
-O dataset não está incluído neste repositório devido ao seu tamanho.
+Os datasets não estão incluídos neste repositório devido ao seu tamanho.
 
-Você pode baixá-lo no [repositório original.](https://github.com/spMohanty/PlantVillage-Dataset)
+Você pode baixar o PlantVillage no [repositório original.](https://github.com/spMohanty/PlantVillage-Dataset)
 Apenas o conjunto de imagens é necessário. Após baixar, coloque o diretório `color/` no seguinte caminho:
 ```
 LeafGuardAI/
@@ -132,27 +150,85 @@ data/
             └── ...
 ```
 
+Opcionalmente, o NewPlantDataset (uma versão do PlantVillage com cópias giradas e espelhadas) também é usado se estiver em `data/raw/NewPlantDataset/train/`.
+
+Os datasets de fotos de campo podem ser baixados dos repositórios originais com o script abaixo, que já coloca as imagens no caminho correto (use `--only` para baixar só alguns, ex.: `--only plantdoc gvlid`):
+```bash
+uv run python scripts/download_field_datasets.py
+```
+```
+LeafGuardAI/
+└── data/
+    └── raw/
+        └── field/
+```
+A estrutura esperada é:
+```
+data/
+└── raw/
+    └── field/
+        ├── PlantDoc/
+        │   ├── train/
+        │   │   ├── Apple Scab Leaf/
+        │   │   └── ...
+        │   └── test/
+        ├── PlantWild/
+        │   ├── apple black rot/
+        │   └── ...
+        ├── GVLiD/
+        ├── ESCA/
+        ├── PotatoEthiopia/
+        └── PlantPathology2021/
+```
+
+As pastas de cada dataset são associadas às classes do PlantVillage em `src/leafguardai/data/field.py`. Fontes:
+
+- **PlantDoc** — Singh, D. et al. *PlantDoc: A Dataset for Visual Plant Disease Detection*. CODS-COMAD 2020. [Repositório](https://github.com/pratikkayal/PlantDoc-Dataset) (CC BY 4.0).
+- **PlantWild** — Wei, T. et al. *Benchmarking In-the-wild Multimodal Plant Disease Recognition and A Versatile Baseline*. ACM MM 2024. [Hugging Face](https://huggingface.co/datasets/uqtwei2/PlantWild) (CC BY-NC-ND 4.0: uso não comercial, sem redistribuir imagens modificadas).
+- **GVLiD** — *GrapeVine Leaf identification of the Diseases*. [Mendeley Data](https://data.mendeley.com/datasets/wkymf8bhcg) (CC BY 4.0).
+- **ESCA-dataset** — Alessandrini, M. et al. [Mendeley Data](https://data.mendeley.com/datasets/89cnxc58kj/1) (CC BY 4.0).
+- **Potato Leaf (Healthy and Late Blight)** — [Mendeley Data](https://data.mendeley.com/datasets/v4w72bsts5) (CC BY 4.0).
+- **Plant Pathology 2021** — Thapa, R. et al., Cornell AgriTech. [Hugging Face](https://huggingface.co/datasets/timm/plant-pathology-2021) (Apache-2.0). O script baixa até 500 fotos por classe, reduzidas para 1024 px.
+
 ## 🏋️ Treinamento
 
 ```bash
 uv run python scripts/train.py
 ```
 
-Flags úteis:
+Para gravar o modelo em outra pasta e compará-lo antes de substituir o atual:
 
 ```bash
-uv run python scripts/train.py --epochs-stage1 10 --epochs-stage2 15 --patience 5
+uv run python scripts/train.py --output-dir models_novo
 ```
+
+> **GPU:** no Windows, o `uv sync` instala o PyTorch sem suporte a GPU, e o treino na CPU leva muitas horas. Para treinar com uma GPU NVIDIA, instale no ambiente uma versão do PyTorch com CUDA (veja [pytorch.org](https://pytorch.org/get-started/locally/)); no Linux com GPU AMD, use o Docker abaixo. Com GPU, o treino completo leva algumas horas; manter a pasta `data/` em um SSD deixa as épocas bem mais rápidas que em um HD.
+
+Opções:
+
+- `--output-dir pasta/` — grava os artefatos em outra pasta (o padrão `models/` substitui o modelo usado pelo app).
+- `--epochs-stage1`, `--epochs-stage2`, `--patience` — épocas máximas de cada estágio (padrão 5 e 25) e épocas sem melhora antes de parar (padrão 5).
+- `--unfreeze-blocks 9` e `--stage2-lr 1e-4` — quantos blocos do *backbone* treinar no estágio 2 e com que taxa de aprendizado (padrão: a rede inteira; com fotos de campo, isso levou o acerto em campo de 72,7% para 78,3% em relação a treinar só os 3 últimos blocos com $10^{-5}$).
+- `--background-prob 0.5` — troca o fundo de parte das folhas do PlantVillage usando as máscaras da pasta `segmented/` do PlantVillage (coloque-a em `data/raw/PlantVillage/segmented/`). Desligada por padrão: deixou o modelo muito mais robusto a fundos artificiais, mas com fotos de campo no treino não melhorou o acerto em campo e deixa o treino ~3× mais lento.
+- `--field-share 0.4` — fração de cada época vinda das fotos de campo; `--no-field` ignora as fotos de campo; `--field-datasets PlantDoc GVLiD ...` usa só os datasets de campo indicados.
+- `--use-processor` — aplica o `ImageProcessor` também no treino (veja a nota na seção do pipeline).
+
+Como o treino funciona:
+
+- **Split por folha:** cópias, giros e espelhamentos da mesma foto ficam sempre na mesma parte (treino, validação ou teste), para que o teste não contenha imagens já vistas no treino.
+- **Escolha do checkpoint:** com fotos de campo presentes, o melhor modelo é escolhido pela acurácia nas fotos de campo da validação.
+- **Pré-processamento consistente:** o treino grava `preprocessing.json` junto do modelo, e o app aplica exatamente o mesmo pré-processamento na inferência. Usar na inferência um pré-processamento diferente do usado no treino derruba a acurácia (no checkpoint antigo, ligar o `ImageProcessor` só na inferência levou de 99% para 64% em folhas do PlantVillage). Checkpoints sem esse arquivo mantêm o comportamento original (com `ImageProcessor`).
 
 Os artefatos são gravados em `models/`:
 
-- `best_model.pt` — melhor checkpoint por acurácia de validação
+- `best_model.pt` — melhor checkpoint (por acurácia de validação, ou de validação de campo quando há fotos de campo)
 - `classes.json` — mapeamento de índice de classes
-- `split.json` — caminhos estratificados de treino/val/teste
+- `preprocessing.json` — se o `ImageProcessor` foi usado no treino
+- `split.json` — caminhos de treino/val/teste
 - `history.json` — métricas por época
-- `metrics.json` — métricas finais de teste
-- `classification_report.txt` — precisão/recall/F1 por classe
-- `confusion_matrix.png`
+- `metrics.json` — métricas finais de teste (inclui `field_test_accuracy` quando há fotos de campo)
+- `classification_report.txt` / `classification_report_campo.txt` — precisão/recall/F1 por classe
+- `confusion_matrix.png` / `confusion_matrix_campo.png`
 
 ### Treinamento com GPU AMD (ROCm + Docker)
 
@@ -173,14 +249,26 @@ docker --context default compose run --rm train
 O diretório atual é montado em `/workspace`; portanto, o dataset em `data/` e os artefatos gerados em `models/` permanecem no host. Argumentos extras de treino podem ser passados após o nome do serviço:
 
 ```bash
-docker --context default compose run --rm train --batch-size 64 --epochs-stage1 10 --epochs-stage2 15
+docker --context default compose run --rm train --batch-size 64 --output-dir models_novo
 ```
+
+Baixe os datasets de campo no host (`uv run python scripts/download_field_datasets.py`) antes de treinar: dois deles vêm em `.rar`, e a extração precisa de `bsdtar`, `unrar` ou `7z`, que não estão na imagem Docker. No Linux, o `bsdtar` vem no pacote `libarchive-tools`.
 
 ## 🔍 Inferência (CLI)
 
 ```bash
 uv run python scripts/predict.py caminho/da/folha.jpg --top 3
 ```
+
+## 🧪 Avaliação em uma Pasta de Fotos
+
+Para medir o modelo de `models/` em várias fotos de uma vez, organize-as em uma pasta com uma subpasta por classe (com o nome exato da classe, ex.: `Tomato___Late_blight/`) e rode:
+
+```bash
+uv run python scripts/evaluate_folder.py caminho/da/pasta
+```
+
+O script usa o mesmo caminho de inferência do app, salva uma planilha (`resultado.csv`) com a previsão de cada foto e mostra o acerto geral, o acerto por faixa de confiança, o acerto por classe e as confusões mais comuns.
 
 ## 📊 Exploração do Dataset
 

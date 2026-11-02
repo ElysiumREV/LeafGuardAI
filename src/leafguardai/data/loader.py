@@ -1,13 +1,18 @@
 from pathlib import Path
 
+from leafguardai.data.split import leaf_group
+from leafguardai.vision.background import find_mask_path
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 PRIMARY_DATASET_PATH = PROJECT_ROOT / "data" / "raw" / "PlantVillage" / "color"
 
+# NewPlantDataset é o próprio PlantVillage com cópias aumentadas (flip/rotação); o split por
+# folha (split.leaf_group) mantém essas cópias junto da original. "train2" era uma cópia
+# idêntica de "train" e foi removida para não duplicar imagens.
 DATASET_PATH = [
     PRIMARY_DATASET_PATH,
     PROJECT_ROOT / "data" / "raw" / "NewPlantDataset" / "train",
-    PROJECT_ROOT / "data" / "raw" / "NewPlantDataset" / "train2"
 ]
 
 
@@ -54,11 +59,15 @@ def get_images_by_class():
             ]
 
             for image in images:
-                dataset.append(
-                    {
-                        "image": image,
-                        "label": folder_name,
-                    }
-                )
+                sample = {
+                    "image": image,
+                    "label": folder_name,
+                    "source": "plantvillage",
+                    "group": leaf_group(folder_name, image.name),
+                }
+                # Máscaras de segmented só batem com as imagens originais (não com as giradas).
+                if path == PRIMARY_DATASET_PATH:
+                    sample["mask"] = find_mask_path(folder_name, image.name)
+                dataset.append(sample)
 
     return dataset
