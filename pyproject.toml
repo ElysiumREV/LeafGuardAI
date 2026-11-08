@@ -24,3 +24,14 @@ leafguardai = "leafguardai.__main__:main"
 [build-system]
 requires = ["uv_build>=0.12.2,<0.13.0"]
 build-backend = "uv_build"
+
+# PyTorch com CUDA no Windows e no Linux (no macOS, o PyPI já tem a versão certa).
+# Sem GPU NVIDIA, esta versão também funciona na CPU.
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]

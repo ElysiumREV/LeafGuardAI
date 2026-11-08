@@ -1,4 +1,8 @@
 import json
+import shutil
+import tempfile
+import urllib.request
+import zipfile
 from pathlib import Path
 
 import torch
@@ -14,6 +18,61 @@ CHECKPOINT_PATH = MODELS_DIR / "best_model.pt"
 CLASSES_PATH = MODELS_DIR / "classes.json"
 PREPROCESSING_PATH = MODELS_DIR / "preprocessing.json"
 
+# Modelo treinado publicado no GitHub Release (gerado com scripts/package_model.py).
+MODEL_URL = "https://github.com/ElysiumREV/LeafGuardAI/releases/latest/download/leafguardai-model.zip"
+MODEL_FILES = ("best_model.pt", "classes.json", "preprocessing.json")
+
+# Faixas de confiança do top-1, medidas em ~4.400 fotos de campo nunca vistas no treino
+# (scripts/evaluate_folder.py): acima de 70% o modelo acerta ~90%; entre 50% e 70%, cerca de
+# 2 em 3 (mas a classe certa quase sempre está no top-3); abaixo de 50%, menos da metade.
+# Recalibrar a cada novo modelo.
+CONFIDENCE_HIGH = 0.70
+CONFIDENCE_LOW = 0.50
+
+
+def confidence_level(probability):
+    """'alta', 'media' ou 'baixa', conforme as faixas acima."""
+    if probability >= CONFIDENCE_HIGH:
+        return "alta"
+    if probability >= CONFIDENCE_LOW:
+        return "media"
+    return "baixa"
+
+
+def model_available():
+    return CHECKPOINT_PATH.exists() and CLASSES_PATH.exists()
+
+
+def download_model(url=None):
+    """Baixa o modelo do GitHub Release e extrai os arquivos em models/."""
+    url = url or MODEL_URL
+    with tempfile.TemporaryDirectory() as temp:
+        archive = Path(temp) / "model.zip"
+        try:
+            with urllib.request.urlopen(url, timeout=60) as response, open(archive, "wb") as file:
+                shutil.copyfileobj(response, file)
+        except OSError as error:
+            raise FileNotFoundError(
+                f"Não encontrei um modelo em {MODELS_DIR} e não consegui baixá-lo de {url} ({error}). "
+                "Verifique a conexão ou rode scripts/train.py para treinar um modelo."
+            ) from error
+
+        with zipfile.ZipFile(archive) as package:
+            names = set(package.namelist())
+            missing = [name for name in MODEL_FILES if name not in names]
+            if missing:
+                raise FileNotFoundError(f"O pacote baixado não contém: {', '.join(missing)}")
+            MODELS_DIR.mkdir(parents=True, exist_ok=True)
+            for name in MODEL_FILES:
+                with package.open(name) as source, open(MODELS_DIR / name, "wb") as target:
+                    shutil.copyfileobj(source, target)
+
+
+def ensure_model():
+    """Garante que existe um modelo em models/, baixando o do GitHub Release se preciso."""
+    if not model_available():
+        download_model()
+
 
 def format_class_name(name: str) -> str:
     """
@@ -25,6 +84,7 @@ def format_class_name(name: str) -> str:
 
     # Split into plant and disease
     plant, disease = name.split("___", 1)
+    plant = plant.replace("_", " ")  # ex.: 'Pepper,_bell' -> 'Pepper, bell'
 
     # Clean disease name: replace underscores with spaces
     disease_clean = disease.replace("_", " ")
@@ -41,6 +101,7 @@ def format_class_name(name: str) -> str:
 
 
 def load_classes():
+    ensure_model()
     if not CLASSES_PATH.exists():
         raise FileNotFoundError(
             f"Não encontrei {CLASSES_PATH}. Rode scripts/train.py primeiro "

@@ -4,7 +4,15 @@ from google import genai
 from PIL import Image
 import threading
 
-from leafguardai.model.infer import format_class_name, load_classes, load_model, predict
+from leafguardai.model.infer import (
+    confidence_level,
+    download_model,
+    format_class_name,
+    load_classes,
+    load_model,
+    model_available,
+    predict,
+)
 
 class MainWindow(ctk.CTk):
     def __init__(self):
@@ -121,6 +129,11 @@ class MainWindow(ctk.CTk):
 
         import torch
 
+        if not model_available():
+            self.result_label.configure(text="Baixando o modelo (só na primeira vez)...")
+            self.update_idletasks()
+            download_model()
+
         self.result_label.configure(text="Carregando modelo...")
         self.update_idletasks()
 
@@ -149,19 +162,38 @@ class MainWindow(ctk.CTk):
             self.result_label.configure(text=f"Não foi possível analisar a imagem.\n{error}")
             return
 
-        lines = ["Resultado (top-3):"]
-        for rank, (label, prob) in enumerate(results, start=1):
-            lines.append(f"{rank}. {format_class_name(label)} — {prob * 100:.1f}%")
-        self.result_label.configure(text="\n".join(lines))
         if not results:
-            self.response_label.configure(text="Nenhum resultado foi encontrado.")
+            self.result_label.configure(text="Nenhum resultado foi encontrado.")
+            self.response_label.configure(text="")
             self.ai_label.configure(text="")
             return
 
         top_label, top_prob = results[0]
+        level = confidence_level(top_prob)
+
+        lines = ["Resultado (top-3):"]
+        for rank, (label, prob) in enumerate(results, start=1):
+            lines.append(f"{rank}. {format_class_name(label)} — {prob * 100:.1f}%")
+        if level == "media":
+            lines.append("\n⚠ Confiança moderada: o resultado pode estar errado. Confira também as outras opções.")
+        elif level == "baixa":
+            lines.append("\n⚠ Resultado incerto: o modelo não tem segurança sobre esta imagem.")
+        self.result_label.configure(text="\n".join(lines))
+
+        if level == "baixa":
+            # Abaixo do limite, o top-1 erra mais do que acerta: não recomendar tratamento.
+            self.response_label.configure(
+                text="Para um resultado mais confiável, tente outra foto: uma única folha, "
+                "bem iluminada e em foco, ocupando a maior parte da imagem."
+            )
+            self.ai_label.configure(text="")
+            return
 
         if top_label.lower().endswith("___healthy"):
-            self.response_label.configure(text="A folha foi classificada como saudável. Nenhuma doença foi detectada.")
+            message = "A folha foi classificada como saudável. Nenhuma doença foi detectada."
+            if level == "media":
+                message = "A folha parece saudável, mas a confiança é moderada. Se houver manchas ou sintomas, tente outra foto."
+            self.response_label.configure(text=message)
             self.ai_label.configure(text="")
             return
 

@@ -89,7 +89,7 @@ After cloning the repository, run:
 uv sync
 ```
 
-This command will install all required dependencies and set up the project's virtual environment automatically.
+This command will install all required dependencies and set up the project's virtual environment automatically. On Windows and Linux, the installed PyTorch already supports NVIDIA GPUs (CUDA); without a GPU, it runs normally on the CPU.
 
 ### Adding Dependencies
 
@@ -117,7 +117,9 @@ or:
 uv run leafguardai
 ```
 
-The GUI classifies a selected leaf image with the trained checkpoint in `models/`. Train the model first.
+The GUI classifies a selected leaf image with the model in `models/`. No training is needed: if `models/` has no model, the app downloads the trained model from the [latest release](https://github.com/ElysiumREV/LeafGuardAI/releases/latest) on the first analysis (about 16 MB). The command line (`scripts/predict.py`) does the same.
+
+The app shows the 3 most likely classes and warns when confidence is low. Below 70%, the result is shown as "moderate confidence"; below 50%, as "uncertain result", and in that case the app does not ask Gemini for treatment guidance and suggests taking another photo. The thresholds are `CONFIDENCE_HIGH` and `CONFIDENCE_LOW` (`src/leafguardai/model/infer.py`), measured on field photos: above 70%, the model is right about 90% of the time.
 
 ## 📁 Dataset
 
@@ -173,7 +175,9 @@ data/
         ├── GVLiD/
         ├── ESCA/
         ├── PotatoEthiopia/
-        └── PlantPathology2021/
+        ├── PlantPathology2021/
+        ├── TomatoPakistan/
+        └── TomatoDIU/
 ```
 
 Each dataset's folders are mapped to the PlantVillage classes in `src/leafguardai/data/field.py`. Sources:
@@ -184,6 +188,8 @@ Each dataset's folders are mapped to the PlantVillage classes in `src/leafguarda
 - **ESCA-dataset** — Alessandrini, M. et al. [Mendeley Data](https://data.mendeley.com/datasets/89cnxc58kj/1) (CC BY 4.0).
 - **Potato Leaf (Healthy and Late Blight)** — [Mendeley Data](https://data.mendeley.com/datasets/v4w72bsts5) (CC BY 4.0).
 - **Plant Pathology 2021** — Thapa, R. et al., Cornell AgriTech. [Hugging Face](https://huggingface.co/datasets/timm/plant-pathology-2021) (Apache-2.0). The script downloads up to 500 photos per class, resized to 1024 px.
+- **Tomato Leaf Disease Classification Dataset in Pakistan** — [Mendeley Data](https://data.mendeley.com/datasets/3mbnb82mxd) (CC BY 4.0). The script uses only the 830 original photos, without the augmented copies.
+- **Tomato leaf diseases** — Daffodil International University. [Mendeley Data](https://data.mendeley.com/datasets/93h9p62kg4) (CC BY 4.0). Detached leaves photographed on a light background; the script downloads only the classes that exist in PlantVillage.
 
 ## 🏋️ Training
 
@@ -197,7 +203,7 @@ To write the model to another folder and compare it before replacing the current
 uv run python scripts/train.py --output-dir models_new
 ```
 
-> **GPU:** on Windows, `uv sync` installs PyTorch without GPU support, and training on the CPU takes many hours. To train with an NVIDIA GPU, install a CUDA build of PyTorch in the environment (see [pytorch.org](https://pytorch.org/get-started/locally/)); on Linux with an AMD GPU, use the Docker setup below. With a GPU, a full training run takes a few hours; keeping the `data/` folder on an SSD makes epochs much faster than on a hard drive.
+> **GPU:** on Windows and Linux, `uv sync` already installs PyTorch with CUDA, and training uses an NVIDIA GPU automatically (on the CPU, training takes many hours). On Linux with an AMD GPU, use the Docker setup below. With a GPU, a full training run takes a few hours; keeping the `data/` folder on an SSD makes epochs much faster than on a hard drive.
 
 Options:
 
@@ -269,6 +275,16 @@ uv run python scripts/evaluate_folder.py path/to/folder
 
 The script uses the same inference path as the app, saves a spreadsheet (`resultado.csv`) with each photo's prediction and prints the overall accuracy, accuracy by confidence band, accuracy per class and the most common confusions.
 
+## 📦 Publishing the Model (GitHub Release)
+
+The trained model is not stored in the repository: it is published as a release asset, and the app downloads it on its own. After training the final model:
+
+```bash
+uv run python scripts/package_model.py
+```
+
+This creates `dist/leafguardai-model.zip`, with `best_model.pt`, `classes.json`, `preprocessing.json` and `metrics.json` (use `--models-dir` to package another folder). On GitHub, create a release (e.g. `v1.0.0`) and attach this file **with exactly this name**. The app always downloads the model from the latest release.
+
 ## 📊 Dataset Exploration
 
 ```bash
@@ -287,3 +303,7 @@ LeafGuardAI/
 ├── pyproject.toml
 └── uv.lock
 ```
+
+## 📄 License
+
+The source code is licensed under the [GNU GPL 3.0](LICENSE). The trained model weights published in the releases are a separate file and are not covered by it: since they were trained on third-party datasets, including PlantWild (CC BY-NC-ND 4.0), they are provided **for non-commercial use only**. The license of each dataset is listed in the [Dataset](#-dataset) section.
