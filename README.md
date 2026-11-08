@@ -307,4 +307,4 @@ LeafGuardAI/
 
 ## 📄 Licença
 
-O código-fonte está sob a licença [MIT](LICENSE). O modelo treinado publicado nos releases foi treinado com datasets de terceiros, incluindo o PlantWild (CC BY-NC-ND 4.0), e por isso é disponibilizado **apenas para uso não comercial**. A licença de cada dataset está na seção [Dataset](#-dataset).
+O código-fonte está sob a licença [GNU GPL 3.0](LICENSE). Os pesos do modelo treinado, publicados nos releases, são um arquivo separado e não estão cobertos por ela: como foram treinados com datasets de terceiros, incluindo o PlantWild (CC BY-NC-ND 4.0), são disponibilizados **apenas para uso não comercial**. A licença de cada dataset está na seção [Dataset](#-dataset).

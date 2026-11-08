@@ -306,4 +306,4 @@ LeafGuardAI/
 
 ## 📄 License
 
-The source code is licensed under the [MIT License](LICENSE). The trained model published in the releases was trained on third-party datasets, including PlantWild (CC BY-NC-ND 4.0), and is therefore provided **for non-commercial use only**. The license of each dataset is listed in the [Dataset](#-dataset) section.
+The source code is licensed under the [GNU GPL 3.0](LICENSE). The trained model weights published in the releases are a separate file and are not covered by it: since they were trained on third-party datasets, including PlantWild (CC BY-NC-ND 4.0), they are provided **for non-commercial use only**. The license of each dataset is listed in the [Dataset](#-dataset) section.
