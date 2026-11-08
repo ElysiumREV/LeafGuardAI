@@ -94,7 +94,7 @@ Após clonar o repositório, execute:
 uv sync
 ```
 
-Este comando instalará todas as dependências necessárias e configurará o ambiente virtual automaticamente.
+Este comando instalará todas as dependências necessárias e configurará o ambiente virtual automaticamente. No Windows e no Linux, o PyTorch instalado já tem suporte a GPU NVIDIA (CUDA); sem GPU, ele funciona normalmente na CPU.
 
 ### Adicionando Dependências
 
@@ -122,7 +122,9 @@ ou:
 uv run leafguardai
 ```
 
-A interface gráfica classifica a imagem de uma folha selecionada utilizando o checkpoint treinado em `models/`. Treine o modelo primeiro.
+A interface gráfica classifica a imagem de uma folha selecionada utilizando o modelo em `models/`. Não é preciso treinar: se a pasta `models/` não tiver um modelo, o app baixa o modelo treinado do [release mais recente](https://github.com/ElysiumREV/LeafGuardAI/releases/latest) na primeira análise (cerca de 16 MB). A linha de comando (`scripts/predict.py`) faz o mesmo.
+
+O app mostra as 3 classes mais prováveis e avisa quando a confiança é baixa. Abaixo de 70%, o resultado aparece como "confiança moderada"; abaixo de 50%, como "resultado incerto", e nesse caso o app não pede orientações de tratamento ao Gemini e sugere outra foto. As faixas ficam em `CONFIDENCE_HIGH` e `CONFIDENCE_LOW` (`src/leafguardai/model/infer.py`), medidas em fotos de campo: acima de 70%, o modelo acerta cerca de 90% das vezes.
 
 ## 📁 Dataset
 
@@ -178,7 +180,9 @@ data/
         ├── GVLiD/
         ├── ESCA/
         ├── PotatoEthiopia/
-        └── PlantPathology2021/
+        ├── PlantPathology2021/
+        ├── TomatoPakistan/
+        └── TomatoDIU/
 ```
 
 As pastas de cada dataset são associadas às classes do PlantVillage em `src/leafguardai/data/field.py`. Fontes:
@@ -189,6 +193,8 @@ As pastas de cada dataset são associadas às classes do PlantVillage em `src/le
 - **ESCA-dataset** — Alessandrini, M. et al. [Mendeley Data](https://data.mendeley.com/datasets/89cnxc58kj/1) (CC BY 4.0).
 - **Potato Leaf (Healthy and Late Blight)** — [Mendeley Data](https://data.mendeley.com/datasets/v4w72bsts5) (CC BY 4.0).
 - **Plant Pathology 2021** — Thapa, R. et al., Cornell AgriTech. [Hugging Face](https://huggingface.co/datasets/timm/plant-pathology-2021) (Apache-2.0). O script baixa até 500 fotos por classe, reduzidas para 1024 px.
+- **Tomato Leaf Disease Classification Dataset in Pakistan** — [Mendeley Data](https://data.mendeley.com/datasets/3mbnb82mxd) (CC BY 4.0). O script usa só as 830 fotos originais, sem as cópias aumentadas.
+- **Tomato leaf diseases** — Daffodil International University. [Mendeley Data](https://data.mendeley.com/datasets/93h9p62kg4) (CC BY 4.0). Folhas destacadas fotografadas sobre fundo claro; o script baixa só as classes que existem no PlantVillage.
 
 ## 🏋️ Treinamento
 
@@ -202,7 +208,7 @@ Para gravar o modelo em outra pasta e compará-lo antes de substituir o atual:
 uv run python scripts/train.py --output-dir models_novo
 ```
 
-> **GPU:** no Windows, o `uv sync` instala o PyTorch sem suporte a GPU, e o treino na CPU leva muitas horas. Para treinar com uma GPU NVIDIA, instale no ambiente uma versão do PyTorch com CUDA (veja [pytorch.org](https://pytorch.org/get-started/locally/)); no Linux com GPU AMD, use o Docker abaixo. Com GPU, o treino completo leva algumas horas; manter a pasta `data/` em um SSD deixa as épocas bem mais rápidas que em um HD.
+> **GPU:** no Windows e no Linux, o `uv sync` já instala o PyTorch com CUDA, e o treino usa a GPU NVIDIA automaticamente (na CPU, o treino leva muitas horas). No Linux com GPU AMD, use o Docker abaixo. Com GPU, o treino completo leva algumas horas; manter a pasta `data/` em um SSD deixa as épocas bem mais rápidas que em um HD.
 
 Opções:
 
@@ -270,6 +276,16 @@ uv run python scripts/evaluate_folder.py caminho/da/pasta
 
 O script usa o mesmo caminho de inferência do app, salva uma planilha (`resultado.csv`) com a previsão de cada foto e mostra o acerto geral, o acerto por faixa de confiança, o acerto por classe e as confusões mais comuns.
 
+## 📦 Publicando o Modelo (GitHub Release)
+
+O modelo treinado não fica no repositório: ele é publicado como arquivo de um release, e o app o baixa sozinho. Depois de treinar o modelo final:
+
+```bash
+uv run python scripts/package_model.py
+```
+
+Isso gera `dist/leafguardai-model.zip`, com `best_model.pt`, `classes.json`, `preprocessing.json` e `metrics.json` (use `--models-dir` para empacotar outra pasta). No GitHub, crie um release (ex.: `v1.0.0`) e anexe esse arquivo **com exatamente esse nome**. O app sempre baixa o modelo do release mais recente.
+
 ## 📊 Exploração do Dataset
 
 ```bash
@@ -288,3 +304,7 @@ LeafGuardAI/
 ├── pyproject.toml
 └── uv.lock
 ```
+
+## 📄 Licença
+
+O código-fonte está sob a licença [MIT](LICENSE). O modelo treinado publicado nos releases foi treinado com datasets de terceiros, incluindo o PlantWild (CC BY-NC-ND 4.0), e por isso é disponibilizado **apenas para uso não comercial**. A licença de cada dataset está na seção [Dataset](#-dataset).

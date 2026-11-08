@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from leafguardai.model.infer import format_class_name, predict
+from leafguardai.model.infer import confidence_level, format_class_name, predict
 
 
 def main():
@@ -27,6 +27,12 @@ def main():
     print(f"\nResultado para: {image_path.name}\n")
     for rank, (label, prob) in enumerate(results, start=1):
         print(f"{rank}. {format_class_name(label):<40} {prob * 100:.2f}%")
+
+    level = confidence_level(results[0][1]) if results else "baixa"
+    if level == "media":
+        print("\nAviso: confiança moderada; o resultado pode estar errado. Confira as outras opções.")
+    elif level == "baixa":
+        print("\nAviso: resultado incerto. Tente outra foto: uma única folha, bem iluminada e em foco.")
 
 
 if __name__ == "__main__":

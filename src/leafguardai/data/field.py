@@ -133,6 +133,32 @@ FIELD_SOURCES = {
             "healthy": "Apple___healthy",
         },
     },
+    "TomatoPakistan": {
+        "license": "CC BY 4.0",
+        "subdirs": [""],  # só as 830 fotos originais ("Dataset (raw)"), sem as cópias aumentadas
+        "mapping": {
+            "Tomato_Early_blight_leaf": "Tomato___Early_blight",
+            "Tomato_Healthy_leaf": "Tomato___healthy",
+            "Tomato_Septoria_leaf_spot": "Tomato___Septoria_leaf_spot",
+            "Tomato_leaf_late_blight": "Tomato___Late_blight",
+            "Tomato_leaf_yellow_curl_virus": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+            "Tomato_mold_leaf": "Tomato___Leaf_Mold",
+        },
+    },
+    "TomatoDIU": {
+        # Folhas destacadas fotografadas com iPhone sobre fundo claro (Daffodil International University).
+        "license": "CC BY 4.0",
+        "subdirs": [""],
+        "mapping": {
+            "Bacterial Spot": "Tomato___Bacterial_spot",
+            "Early Blight": "Tomato___Early_blight",
+            "Healthy": "Tomato___healthy",
+            "Late Blight": "Tomato___Late_blight",
+            "Leaf Mold": "Tomato___Leaf_Mold",
+            "Spider Mites": "Tomato___Spider_mites Two-spotted_spider_mite",
+            "Tomato Leaf Curl Virus": "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
+        },
+    },
 }
 
 

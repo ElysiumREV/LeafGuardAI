@@ -174,6 +174,45 @@ def download_plant_pathology_2021(target, per_class=500, max_side=1024):
         print(f"   {offset} linhas lidas | {counts}", flush=True)
 
 
+def download_tomato_pakistan(target):
+    # O zip tem 830 fotos originais em "Dataset (raw)" e ~7.200 cópias aumentadas (ignoradas:
+    # o treino já faz aumento de dados, e cópias da mesma foto vazariam entre treino e teste).
+    file = _mendeley_files("3mbnb82mxd")[0]
+    wanted = set(FIELD_SOURCES["TomatoPakistan"]["mapping"])
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = Path(tmp) / "tomato_pakistan.zip"
+        _download(file["content_details"]["download_url"], archive)
+        with zipfile.ZipFile(archive) as zf:
+            for member in zf.infolist():
+                parts = member.filename.split("/")
+                # Tomato Dataset/Dataset (raw)/<classe>/<arquivo>
+                if member.is_dir() or len(parts) != 4 or parts[1] != "Dataset (raw)" or parts[2] not in wanted:
+                    continue
+                path = target / parts[2] / INVALID_CHARS.sub("_", parts[3])
+                path.parent.mkdir(parents=True, exist_ok=True)
+                with zf.open(member) as source, open(path, "wb") as destination:
+                    shutil.copyfileobj(source, destination)
+
+
+def download_tomato_diu(target):
+    # Arquivos soltos no Mendeley; a classe é o nome da pasta de cada arquivo.
+    dataset_id = "93h9p62kg4"
+    version = json.loads(_get(MENDELEY_API.format(dataset_id)))["version"]
+    folders = {f["id"]: f["name"] for f in json.loads(_get(f"{MENDELEY_API.format(dataset_id)}/folders/{version}"))}
+    wanted = set(FIELD_SOURCES["TomatoDIU"]["mapping"])
+    files = [f for f in _mendeley_files(dataset_id)
+             if folders.get(f.get("folder_id")) in wanted and f["filename"].lower().endswith(".jpg")]
+
+    def fetch(file):
+        path = target / folders[file["folder_id"]] / INVALID_CHARS.sub("_", file["filename"])
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if not path.exists():
+            path.write_bytes(_get(file["content_details"]["download_url"]))
+
+    with ThreadPoolExecutor(8) as pool:
+        list(pool.map(fetch, files))
+
+
 DOWNLOADERS = {
     "PlantDoc": download_plantdoc,
     "PlantWild": download_plantwild,
@@ -181,6 +220,8 @@ DOWNLOADERS = {
     "ESCA": download_esca,
     "PotatoEthiopia": download_potato_ethiopia,
     "PlantPathology2021": download_plant_pathology_2021,
+    "TomatoPakistan": download_tomato_pakistan,
+    "TomatoDIU": download_tomato_diu,
 }
 
 
