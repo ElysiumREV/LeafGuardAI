@@ -23,16 +23,33 @@ MODEL_URL = "https://github.com/ElysiumREV/LeafGuardAI/releases/latest/download/
 MODEL_FILES = ("best_model.pt", "classes.json", "preprocessing.json")
 
 # Faixas de confiança do top-1, medidas em ~4.400 fotos de campo nunca vistas no treino
-# (scripts/evaluate_folder.py): acima de 70% o modelo acerta ~90%; entre 50% e 70%, cerca de
-# 2 em 3 (mas a classe certa quase sempre está no top-3); abaixo de 50%, menos da metade.
+# (scripts/evaluate_folder.py): acima de 70% o modelo acerta ~90%; entre 50% e 70%, ~59%;
+# abaixo de 50%, ~40%. Com a planta informada, a confiança sobe sem o acerto acompanhar
+# (70-90%: só ~68%; acima de 90%: ~95%), por isso o limite de "alta" é maior.
 # Recalibrar a cada novo modelo.
 CONFIDENCE_HIGH = 0.70
+CONFIDENCE_HIGH_WITH_PLANT = 0.90
 CONFIDENCE_LOW = 0.50
 
+# Plantas que o usuário pode informar (nome exibido -> prefixo da classe). Só as que têm duas
+# ou mais classes no modelo: nas outras (ex.: Soybean, só "healthy"), restringir a resposta
+# daria sempre 100% na única classe conhecida, mesmo em uma folha doente.
+PLANT_CHOICES = {
+    "Batata": "Potato",
+    "Cereja": "Cherry_(including_sour)",
+    "Maçã": "Apple",
+    "Milho": "Corn_(maize)",
+    "Morango": "Strawberry",
+    "Pêssego": "Peach",
+    "Pimentão": "Pepper,_bell",
+    "Tomate": "Tomato",
+    "Uva": "Grape",
+}
 
-def confidence_level(probability):
+
+def confidence_level(probability, plant_known=False):
     """'alta', 'media' ou 'baixa', conforme as faixas acima."""
-    if probability >= CONFIDENCE_HIGH:
+    if probability >= (CONFIDENCE_HIGH_WITH_PLANT if plant_known else CONFIDENCE_HIGH):
         return "alta"
     if probability >= CONFIDENCE_LOW:
         return "media"
@@ -154,7 +171,9 @@ def preprocess_image(image_path, use_processor=None):
     return tensor.unsqueeze(0)
 
 
-def predict(image_path, top_k=3, model=None, classes=None, device=None):
+def predict(image_path, top_k=3, model=None, classes=None, device=None, plant=None):
+    """Top-k de (classe, probabilidade). Com `plant` (prefixo da classe, ex.: 'Tomato'), considera
+    só as classes dessa planta e redistribui as probabilidades entre elas."""
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -170,8 +189,16 @@ def predict(image_path, top_k=3, model=None, classes=None, device=None):
         outputs = model(input_tensor)
         probabilities = torch.softmax(outputs, dim=1)[0]
 
-    top_k = min(top_k, len(classes))
-    top_probs, top_indices = probabilities.topk(top_k)
+    available = len(classes)
+    if plant is not None:
+        mask = torch.tensor([name.split("___", 1)[0] == plant for name in classes], device=device)
+        available = int(mask.sum())
+        if available == 0:
+            raise ValueError(f"O modelo não tem classes da planta '{plant}'.")
+        probabilities = probabilities * mask
+        probabilities = probabilities / probabilities.sum()
+
+    top_probs, top_indices = probabilities.topk(min(top_k, available))
 
     return [
         (classes[index.item()], prob.item())

@@ -5,6 +5,7 @@ from PIL import Image
 import threading
 
 from leafguardai.model.infer import (
+    PLANT_CHOICES,
     confidence_level,
     download_model,
     format_class_name,
@@ -14,11 +15,14 @@ from leafguardai.model.infer import (
     predict,
 )
 
+UNKNOWN_PLANT = "Não sei / outra planta"
+
+
 class MainWindow(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("LeafGuard AI")
-        self.geometry("720x760")
+        self.geometry("720x820")
         ctk.set_default_color_theme("green")
         ctk.set_appearance_mode("dark")
 
@@ -37,6 +41,16 @@ class MainWindow(ctk.CTk):
             command=self.select_image,
         )
         self.select_button.pack(pady=(24, 8))
+
+        self.plant_label = ctk.CTkLabel(self, text="Qual é a planta? (opcional)")
+        self.plant_label.pack(pady=(8, 0))
+
+        self.plant_menu = ctk.CTkOptionMenu(
+            self,
+            values=[UNKNOWN_PLANT, *sorted(PLANT_CHOICES)],
+        )
+        self.plant_menu.set(UNKNOWN_PLANT)
+        self.plant_menu.pack(pady=(4, 8))
 
         self.analyze_button = ctk.CTkButton(
             self,
@@ -146,6 +160,9 @@ class MainWindow(ctk.CTk):
             self.result_label.configure(text="Selecione uma imagem primeiro.")
             return
 
+        plant_name = self.plant_menu.get()
+        plant = PLANT_CHOICES.get(plant_name)
+
         try:
             self._ensure_model()
             results = predict(
@@ -154,6 +171,7 @@ class MainWindow(ctk.CTk):
                 model=self._model,
                 classes=self._classes,
                 device=self._device,
+                plant=plant,
             )
         except FileNotFoundError as error:
             self.result_label.configure(text=str(error))
@@ -169,9 +187,9 @@ class MainWindow(ctk.CTk):
             return
 
         top_label, top_prob = results[0]
-        level = confidence_level(top_prob)
+        level = confidence_level(top_prob, plant_known=plant is not None)
 
-        lines = ["Resultado (top-3):"]
+        lines = [f"Resultado (considerando apenas: {plant_name}):" if plant else "Resultado (top-3):"]
         for rank, (label, prob) in enumerate(results, start=1):
             lines.append(f"{rank}. {format_class_name(label)} — {prob * 100:.1f}%")
         if level == "media":

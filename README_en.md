@@ -121,6 +121,8 @@ The GUI classifies a selected leaf image with the model in `models/`. No trainin
 
 The app shows the 3 most likely classes and warns when confidence is low. Below 70%, the result is shown as "moderate confidence"; below 50%, as "uncertain result", and in that case the app does not ask Gemini for treatment guidance and suggests taking another photo. The thresholds are `CONFIDENCE_HIGH` and `CONFIDENCE_LOW` (`src/leafguardai/model/infer.py`), measured on field photos: above 70%, the model is right about 90% of the time.
 
+The optional **Qual é a planta?** ("Which plant is it?") field restricts the answer to the classes of the chosen plant, which removes confusion between plants: on the field test photos, accuracy rises from 78.2% to 85.1% (83.7% excluding plants with a single class). In this mode, confidence is only considered high from 90%. The field lists only plants with two or more classes in the model; for the others, use "Não sei / outra planta" ("I don't know / other plant").
+
 ## 📁 Dataset
 
 This project uses **PlantVillage** (leaf photos taken in a lab) and a set of **field leaf photo datasets**.
@@ -262,7 +264,7 @@ Download the field datasets on the host (`uv run python scripts/download_field_d
 ## 🔍 Inference (CLI)
 
 ```bash
-uv run python scripts/predict.py path/to/leaf.jpg --top 3
+uv run python scripts/predict.py path/to/leaf.jpg --top 3 --planta Tomate
 ```
 
 ## 🧪 Evaluating a Folder of Photos
