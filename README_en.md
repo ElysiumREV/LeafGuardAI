@@ -193,6 +193,8 @@ Each dataset's folders are mapped to the PlantVillage classes in `src/leafguarda
 - **Tomato Leaf Disease Classification Dataset in Pakistan** — [Mendeley Data](https://data.mendeley.com/datasets/3mbnb82mxd) (CC BY 4.0). The script uses only the 830 original photos, without the augmented copies.
 - **Tomato leaf diseases** — Daffodil International University. [Mendeley Data](https://data.mendeley.com/datasets/93h9p62kg4) (CC BY 4.0). Detached leaves photographed on a light background; the script downloads only the classes that exist in PlantVillage.
 
+Training ignores the photos listed in `src/leafguardai/data/field_exclude.txt` (PlantWild slides, banners and fruit photos, selected by automatic screening). TomatoDIU photos are kept out of the field validation and test sets, because the same leaf appears in several photos: 80% go to training and the last 20% of each class, by file number, are held out.
+
 ## 🏋️ Training
 
 ```bash

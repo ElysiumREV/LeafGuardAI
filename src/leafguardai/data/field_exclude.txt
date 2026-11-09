@@ -1,0 +1,724 @@
+# Fotos ignoradas no treino e na avaliação (caminhos relativos a data/raw/field).
+# PlantWild: slides, gráficos e banners, e fotos em que o foco é o fruto, não a folha.
+# Lista feita por triagem automática: pode conter algumas fotos boas de folha.
+PlantWild/apple black rot/1.jpg
+PlantWild/apple black rot/10.jpg
+PlantWild/apple black rot/12.jpg
+PlantWild/apple black rot/143.jpg
+PlantWild/apple black rot/145.jpg
+PlantWild/apple black rot/16.jpg
+PlantWild/apple black rot/2.jpg
+PlantWild/apple black rot/38.jpg
+PlantWild/apple black rot/44.jpg
+PlantWild/apple black rot/5.jpg
+PlantWild/apple black rot/7.jpg
+PlantWild/apple black rot/72.jpg
+PlantWild/apple black rot/8.jpg
+PlantWild/apple black rot/google_0014.jpg
+PlantWild/apple black rot/google_0022.jpg
+PlantWild/apple black rot/google_0024.jpg
+PlantWild/apple black rot/google_0033.jpg
+PlantWild/apple black rot/google_0043.jpg
+PlantWild/apple black rot/google_0045.jpg
+PlantWild/apple black rot/google_0048.jpg
+PlantWild/apple black rot/google_0050.jpg
+PlantWild/apple black rot/google_0067.jpg
+PlantWild/apple black rot/google_0093.jpg
+PlantWild/apple black rot/google_0118.jpg
+PlantWild/apple black rot/google_0121.jpg
+PlantWild/apple black rot/google_0122.jpg
+PlantWild/apple black rot/google_0136.jpg
+PlantWild/apple black rot/google_0145.jpg
+PlantWild/apple black rot/google_0160.jpg
+PlantWild/apple leaf/10.jpg
+PlantWild/apple leaf/131.jpg
+PlantWild/apple leaf/132.jpg
+PlantWild/apple leaf/133.jpg
+PlantWild/apple leaf/14.jpg
+PlantWild/apple leaf/142.jpg
+PlantWild/apple leaf/152.jpg
+PlantWild/apple leaf/158.jpg
+PlantWild/apple leaf/16.jpg
+PlantWild/apple leaf/160.jpg
+PlantWild/apple leaf/175.jpg
+PlantWild/apple leaf/194.jpg
+PlantWild/apple leaf/206.jpg
+PlantWild/apple leaf/211.jpg
+PlantWild/apple leaf/220.jpg
+PlantWild/apple leaf/225.jpg
+PlantWild/apple leaf/228.jpg
+PlantWild/apple leaf/229.jpg
+PlantWild/apple leaf/238.jpg
+PlantWild/apple leaf/246.jpg
+PlantWild/apple leaf/25.jpg
+PlantWild/apple leaf/253.jpg
+PlantWild/apple leaf/26.jpg
+PlantWild/apple leaf/261.jpg
+PlantWild/apple leaf/264.jpg
+PlantWild/apple leaf/265.jpg
+PlantWild/apple leaf/267.jpg
+PlantWild/apple leaf/271.jpg
+PlantWild/apple leaf/273.jpg
+PlantWild/apple leaf/275.jpg
+PlantWild/apple leaf/28.jpg
+PlantWild/apple leaf/281.jpg
+PlantWild/apple leaf/287.jpg
+PlantWild/apple leaf/291.jpg
+PlantWild/apple leaf/300.jpg
+PlantWild/apple leaf/315.jpg
+PlantWild/apple leaf/321.jpg
+PlantWild/apple leaf/323.jpg
+PlantWild/apple leaf/324.jpg
+PlantWild/apple leaf/34.jpg
+PlantWild/apple leaf/43.jpg
+PlantWild/apple leaf/45.jpg
+PlantWild/apple leaf/53.jpg
+PlantWild/apple leaf/58.jpg
+PlantWild/apple leaf/6.jpg
+PlantWild/apple leaf/65.jpg
+PlantWild/apple leaf/67.jpg
+PlantWild/apple leaf/7.jpg
+PlantWild/apple leaf/77.jpg
+PlantWild/apple leaf/9.jpg
+PlantWild/apple leaf/google_0015.jpg
+PlantWild/apple leaf/google_0042.jpg
+PlantWild/apple leaf/google_0345.jpg
+PlantWild/apple leaf/google_0374.jpg
+PlantWild/apple leaf/google_0377.jpg
+PlantWild/apple leaf/google_0396.jpg
+PlantWild/apple leaf/google_0422.jpg
+PlantWild/apple leaf/google_0437.jpg
+PlantWild/apple leaf/google_0479.jpg
+PlantWild/apple leaf/google_0480.jpg
+PlantWild/apple leaf/google_0481.jpg
+PlantWild/apple leaf/google_0493.jpg
+PlantWild/apple leaf/google_0503.jpg
+PlantWild/apple leaf/google_0506.jpg
+PlantWild/apple leaf/google_0570.jpg
+PlantWild/apple leaf/google_0581.jpg
+PlantWild/apple leaf/google_0585.jpg
+PlantWild/apple rust/100.jpg
+PlantWild/apple rust/157.jpg
+PlantWild/apple rust/16.jpg
+PlantWild/apple rust/178.jpg
+PlantWild/apple rust/181.jpg
+PlantWild/apple rust/208.jpg
+PlantWild/apple rust/33.jpg
+PlantWild/apple rust/5.jpg
+PlantWild/apple rust/51.jpg
+PlantWild/apple rust/52.jpg
+PlantWild/apple rust/95.jpg
+PlantWild/apple rust/96.jpg
+PlantWild/apple rust/google_0007.jpg
+PlantWild/apple rust/google_0008.jpg
+PlantWild/apple rust/google_0027.jpg
+PlantWild/apple rust/google_0124.jpg
+PlantWild/apple rust/google_0177.jpg
+PlantWild/apple rust/google_0180.jpg
+PlantWild/apple rust/google_0197.jpg
+PlantWild/apple rust/google_0212.jpg
+PlantWild/apple rust/google_0238.jpg
+PlantWild/apple scab/11.jpg
+PlantWild/apple scab/12.jpg
+PlantWild/apple scab/13.jpg
+PlantWild/apple scab/15.jpg
+PlantWild/apple scab/18.jpg
+PlantWild/apple scab/21.jpg
+PlantWild/apple scab/23.jpg
+PlantWild/apple scab/31.jpg
+PlantWild/apple scab/43.jpg
+PlantWild/apple scab/45.jpg
+PlantWild/apple scab/48.jpg
+PlantWild/apple scab/50.jpg
+PlantWild/apple scab/6.jpg
+PlantWild/apple scab/61.jpg
+PlantWild/apple scab/64.jpg
+PlantWild/apple scab/66.jpg
+PlantWild/apple scab/68 - Copy (2).jpg
+PlantWild/apple scab/68 - Copy.jpg
+PlantWild/apple scab/72.jpg
+PlantWild/apple scab/86.jpg
+PlantWild/apple scab/google_0001.jpg
+PlantWild/apple scab/google_0002.jpg
+PlantWild/apple scab/google_0024.jpg
+PlantWild/apple scab/google_0028.jpg
+PlantWild/apple scab/google_0029.jpg
+PlantWild/apple scab/google_0032.jpg
+PlantWild/apple scab/google_0041.jpg
+PlantWild/apple scab/google_0042.jpg
+PlantWild/apple scab/google_0046.jpg
+PlantWild/apple scab/google_0068.jpg
+PlantWild/apple scab/google_0086.jpg
+PlantWild/apple scab/google_0092.jpg
+PlantWild/apple scab/google_0093.jpg
+PlantWild/apple scab/google_0098.jpg
+PlantWild/apple scab/google_0104.jpg
+PlantWild/apple scab/google_0106.jpg
+PlantWild/apple scab/google_0107.jpg
+PlantWild/apple scab/google_0108.jpg
+PlantWild/apple scab/google_0113.jpg
+PlantWild/apple scab/google_0114.jpg
+PlantWild/apple scab/google_0117.jpg
+PlantWild/apple scab/google_0118.jpg
+PlantWild/apple scab/google_0121.jpg
+PlantWild/apple scab/google_0125.jpg
+PlantWild/apple scab/google_0133.jpg
+PlantWild/apple scab/google_0140.jpg
+PlantWild/apple scab/google_0163.jpg
+PlantWild/apple scab/google_0165.jpg
+PlantWild/apple scab/google_0177.jpg
+PlantWild/apple scab/google_0191.jpg
+PlantWild/apple scab/google_0196.jpg
+PlantWild/apple scab/google_0200.jpg
+PlantWild/apple scab/google_0204.jpg
+PlantWild/apple scab/google_0208.jpg
+PlantWild/apple scab/google_0216.jpg
+PlantWild/apple scab/google_0219.jpg
+PlantWild/apple scab/google_0240.jpg
+PlantWild/apple scab/google_0249.jpg
+PlantWild/apple scab/google_0259.jpg
+PlantWild/apple scab/google_0268.jpg
+PlantWild/apple scab/google_0291.jpg
+PlantWild/apple scab/google_0294.jpg
+PlantWild/apple scab/google_0317.jpg
+PlantWild/apple scab/google_0323.jpg
+PlantWild/apple scab/google_0332.jpg
+PlantWild/apple scab/google_0334.jpg
+PlantWild/bell pepper leaf spot/29 - Copy (2).jpg
+PlantWild/bell pepper leaf spot/google_0006.jpg
+PlantWild/bell pepper leaf spot/google_0009.jpg
+PlantWild/bell pepper leaf spot/google_0012.jpg
+PlantWild/bell pepper leaf spot/google_0023.jpg
+PlantWild/bell pepper leaf spot/google_0031.jpg
+PlantWild/bell pepper leaf spot/google_0048.jpg
+PlantWild/bell pepper leaf spot/google_0057.jpg
+PlantWild/bell pepper leaf spot/google_0064.jpg
+PlantWild/bell pepper leaf spot/google_0089.jpg
+PlantWild/bell pepper leaf spot/google_0095.jpg
+PlantWild/bell pepper leaf spot/google_0097.jpg
+PlantWild/bell pepper leaf spot/google_0122.jpg
+PlantWild/bell pepper leaf spot/google_0144.jpg
+PlantWild/bell pepper leaf spot/google_0153.jpg
+PlantWild/bell pepper leaf spot/google_0179.jpg
+PlantWild/bell pepper leaf spot/google_0225.jpg
+PlantWild/bell pepper leaf/109.jpg
+PlantWild/bell pepper leaf/154.jpg
+PlantWild/bell pepper leaf/155.jpg
+PlantWild/bell pepper leaf/16.jpg
+PlantWild/bell pepper leaf/167.jpg
+PlantWild/bell pepper leaf/168.jpg
+PlantWild/bell pepper leaf/17.jpg
+PlantWild/bell pepper leaf/171.jpg
+PlantWild/bell pepper leaf/18.jpg
+PlantWild/bell pepper leaf/189.jpg
+PlantWild/bell pepper leaf/190.jpg
+PlantWild/bell pepper leaf/197.jpg
+PlantWild/bell pepper leaf/20.jpg
+PlantWild/bell pepper leaf/205.jpg
+PlantWild/bell pepper leaf/206.jpg
+PlantWild/bell pepper leaf/207.jpg
+PlantWild/bell pepper leaf/208.jpg
+PlantWild/bell pepper leaf/21.jpg
+PlantWild/bell pepper leaf/210.jpg
+PlantWild/bell pepper leaf/213.jpg
+PlantWild/bell pepper leaf/214.jpg
+PlantWild/bell pepper leaf/219.jpg
+PlantWild/bell pepper leaf/228.jpg
+PlantWild/bell pepper leaf/23.jpg
+PlantWild/bell pepper leaf/230.jpg
+PlantWild/bell pepper leaf/233.jpg
+PlantWild/bell pepper leaf/235.jpg
+PlantWild/bell pepper leaf/237.jpg
+PlantWild/bell pepper leaf/241.jpg
+PlantWild/bell pepper leaf/242.jpg
+PlantWild/bell pepper leaf/243.jpg
+PlantWild/bell pepper leaf/245.jpg
+PlantWild/bell pepper leaf/248.jpg
+PlantWild/bell pepper leaf/253.jpg
+PlantWild/bell pepper leaf/258.jpg
+PlantWild/bell pepper leaf/260.jpg
+PlantWild/bell pepper leaf/27.jpg
+PlantWild/bell pepper leaf/271.jpg
+PlantWild/bell pepper leaf/278.jpg
+PlantWild/bell pepper leaf/29.jpg
+PlantWild/bell pepper leaf/3.jpg
+PlantWild/bell pepper leaf/31.jpg
+PlantWild/bell pepper leaf/33.jpg
+PlantWild/bell pepper leaf/34.jpg
+PlantWild/bell pepper leaf/35.jpg
+PlantWild/bell pepper leaf/37.jpg
+PlantWild/bell pepper leaf/38.jpg
+PlantWild/bell pepper leaf/47.jpg
+PlantWild/bell pepper leaf/49.jpg
+PlantWild/bell pepper leaf/50.jpg
+PlantWild/bell pepper leaf/51.jpg
+PlantWild/bell pepper leaf/52.jpg
+PlantWild/bell pepper leaf/53.jpg
+PlantWild/bell pepper leaf/56.jpg
+PlantWild/bell pepper leaf/58.jpg
+PlantWild/bell pepper leaf/6.jpg
+PlantWild/bell pepper leaf/61.jpg
+PlantWild/bell pepper leaf/65.jpg
+PlantWild/bell pepper leaf/66.jpg
+PlantWild/bell pepper leaf/68.jpg
+PlantWild/bell pepper leaf/69.jpg
+PlantWild/bell pepper leaf/7.jpg
+PlantWild/bell pepper leaf/73.jpg
+PlantWild/bell pepper leaf/8.jpg
+PlantWild/bell pepper leaf/82.jpg
+PlantWild/bell pepper leaf/84.jpg
+PlantWild/bell pepper leaf/9.jpg
+PlantWild/bell pepper leaf/91.jpg
+PlantWild/bell pepper leaf/96.jpg
+PlantWild/bell pepper leaf/google_0001.jpg
+PlantWild/bell pepper leaf/google_0006.jpg
+PlantWild/bell pepper leaf/google_0013.jpg
+PlantWild/bell pepper leaf/google_0015.jpg
+PlantWild/bell pepper leaf/google_0027.jpg
+PlantWild/bell pepper leaf/google_0032.jpg
+PlantWild/bell pepper leaf/google_0044.jpg
+PlantWild/bell pepper leaf/google_0053.jpg
+PlantWild/bell pepper leaf/google_0055.jpg
+PlantWild/bell pepper leaf/google_0064.jpg
+PlantWild/bell pepper leaf/google_0067.jpg
+PlantWild/bell pepper leaf/google_0083.jpg
+PlantWild/bell pepper leaf/google_0088.jpg
+PlantWild/bell pepper leaf/google_0091.jpg
+PlantWild/bell pepper leaf/google_0099.jpg
+PlantWild/bell pepper leaf/google_0101.jpg
+PlantWild/bell pepper leaf/google_0108.jpg
+PlantWild/bell pepper leaf/google_0115.jpg
+PlantWild/bell pepper leaf/google_0131.jpg
+PlantWild/bell pepper leaf/google_0156.jpg
+PlantWild/bell pepper leaf/google_0172.jpg
+PlantWild/bell pepper leaf/google_0177.jpg
+PlantWild/bell pepper leaf/google_0186.jpg
+PlantWild/bell pepper leaf/google_0195.jpg
+PlantWild/bell pepper leaf/google_0198.jpg
+PlantWild/bell pepper leaf/google_0208.jpg
+PlantWild/bell pepper leaf/google_0213.jpg
+PlantWild/bell pepper leaf/google_0214.jpg
+PlantWild/bell pepper leaf/google_0253.jpg
+PlantWild/bell pepper leaf/google_0260.jpg
+PlantWild/bell pepper leaf/google_0275.jpg
+PlantWild/blueberry leaf/10.jpg
+PlantWild/blueberry leaf/100.jpg
+PlantWild/blueberry leaf/107.jpg
+PlantWild/blueberry leaf/11.jpg
+PlantWild/blueberry leaf/110.jpg
+PlantWild/blueberry leaf/137.jpg
+PlantWild/blueberry leaf/171.jpg
+PlantWild/blueberry leaf/173.jpg
+PlantWild/blueberry leaf/175.jpg
+PlantWild/blueberry leaf/178.jpg
+PlantWild/blueberry leaf/179.jpg
+PlantWild/blueberry leaf/18.jpg
+PlantWild/blueberry leaf/181.jpg
+PlantWild/blueberry leaf/191.jpg
+PlantWild/blueberry leaf/199.jpg
+PlantWild/blueberry leaf/20.jpg
+PlantWild/blueberry leaf/205.jpg
+PlantWild/blueberry leaf/207.jpg
+PlantWild/blueberry leaf/214.jpg
+PlantWild/blueberry leaf/22.jpg
+PlantWild/blueberry leaf/23.jpg
+PlantWild/blueberry leaf/28.jpg
+PlantWild/blueberry leaf/3.jpg
+PlantWild/blueberry leaf/43.jpg
+PlantWild/blueberry leaf/44.jpg
+PlantWild/blueberry leaf/48.jpg
+PlantWild/blueberry leaf/50.jpg
+PlantWild/blueberry leaf/51.jpg
+PlantWild/blueberry leaf/53.jpg
+PlantWild/blueberry leaf/56.jpg
+PlantWild/blueberry leaf/58.jpg
+PlantWild/blueberry leaf/67.jpg
+PlantWild/blueberry leaf/71.jpg
+PlantWild/blueberry leaf/72.jpg
+PlantWild/blueberry leaf/74.jpg
+PlantWild/blueberry leaf/78.jpg
+PlantWild/blueberry leaf/google_0019.jpg
+PlantWild/blueberry leaf/google_0038.jpg
+PlantWild/blueberry leaf/google_0181.jpg
+PlantWild/blueberry leaf/google_0190.jpg
+PlantWild/blueberry leaf/google_0196.jpg
+PlantWild/blueberry leaf/google_0239.jpg
+PlantWild/blueberry leaf/google_0290.jpg
+PlantWild/blueberry leaf/google_0315.jpg
+PlantWild/blueberry leaf/google_0331.jpg
+PlantWild/blueberry leaf/google_0402.jpg
+PlantWild/blueberry leaf/google_0419.jpg
+PlantWild/blueberry leaf/google_0503.jpg
+PlantWild/blueberry leaf/google_0504.jpg
+PlantWild/cherry leaf/100.jpg
+PlantWild/cherry leaf/111.jpg
+PlantWild/cherry leaf/112.jpg
+PlantWild/cherry leaf/118.jpg
+PlantWild/cherry leaf/119.jpg
+PlantWild/cherry leaf/124.jpg
+PlantWild/cherry leaf/127.jpg
+PlantWild/cherry leaf/129.jpg
+PlantWild/cherry leaf/130.jpg
+PlantWild/cherry leaf/132.jpg
+PlantWild/cherry leaf/137.jpg
+PlantWild/cherry leaf/138.jpg
+PlantWild/cherry leaf/146.jpg
+PlantWild/cherry leaf/191.jpg
+PlantWild/cherry leaf/27.jpg
+PlantWild/cherry leaf/28.jpg
+PlantWild/cherry leaf/31.jpg
+PlantWild/cherry leaf/41.jpg
+PlantWild/cherry leaf/48.jpg
+PlantWild/cherry leaf/49.jpg
+PlantWild/cherry leaf/55.jpg
+PlantWild/cherry leaf/78.jpg
+PlantWild/cherry leaf/8.jpg
+PlantWild/cherry leaf/93.jpg
+PlantWild/cherry leaf/96.jpg
+PlantWild/cherry leaf/98.jpg
+PlantWild/cherry leaf/google_0041.jpg
+PlantWild/cherry leaf/google_0045.jpg
+PlantWild/cherry leaf/google_0071.jpg
+PlantWild/cherry leaf/google_0162.jpg
+PlantWild/cherry leaf/google_0224.jpg
+PlantWild/cherry leaf/google_0332.jpg
+PlantWild/cherry leaf/google_0443.jpg
+PlantWild/cherry leaf/google_0463.jpg
+PlantWild/cherry powdery mildew/18.jpg
+PlantWild/cherry powdery mildew/21.jpg
+PlantWild/cherry powdery mildew/google_0060.jpg
+PlantWild/cherry powdery mildew/google_0084.jpg
+PlantWild/cherry powdery mildew/google_0136.jpg
+PlantWild/citrus greening disease/101.jpg
+PlantWild/citrus greening disease/103.jpg
+PlantWild/citrus greening disease/108.jpg
+PlantWild/citrus greening disease/12 - Copy.jpg
+PlantWild/citrus greening disease/121.jpg
+PlantWild/citrus greening disease/13.jpg
+PlantWild/citrus greening disease/14.jpg
+PlantWild/citrus greening disease/18.jpg
+PlantWild/citrus greening disease/28.jpg
+PlantWild/citrus greening disease/29.jpg
+PlantWild/citrus greening disease/45.jpg
+PlantWild/citrus greening disease/58.jpg
+PlantWild/citrus greening disease/59.jpg
+PlantWild/citrus greening disease/76.jpg
+PlantWild/citrus greening disease/93.jpg
+PlantWild/citrus greening disease/97.jpg
+PlantWild/citrus greening disease/google_0004.jpg
+PlantWild/citrus greening disease/google_0017.jpg
+PlantWild/citrus greening disease/google_0023.jpg
+PlantWild/citrus greening disease/google_0029.jpg
+PlantWild/citrus greening disease/google_0040.jpg
+PlantWild/citrus greening disease/google_0046.jpg
+PlantWild/citrus greening disease/google_0047.jpg
+PlantWild/citrus greening disease/google_0048.jpg
+PlantWild/citrus greening disease/google_0052.jpg
+PlantWild/citrus greening disease/google_0064.jpg
+PlantWild/citrus greening disease/google_0070.jpg
+PlantWild/citrus greening disease/google_0078.jpg
+PlantWild/citrus greening disease/google_0086.jpg
+PlantWild/citrus greening disease/google_0097.jpg
+PlantWild/citrus greening disease/google_0110.jpg
+PlantWild/citrus greening disease/google_0120.jpg
+PlantWild/citrus greening disease/google_0121.jpg
+PlantWild/citrus greening disease/google_0134.jpg
+PlantWild/citrus greening disease/google_0146.jpg
+PlantWild/citrus greening disease/google_0149.jpg
+PlantWild/citrus greening disease/google_0150.jpg
+PlantWild/citrus greening disease/google_0151.jpg
+PlantWild/citrus greening disease/google_0152.jpg
+PlantWild/citrus greening disease/google_0154.jpg
+PlantWild/citrus greening disease/google_0158.jpg
+PlantWild/citrus greening disease/google_0174.jpg
+PlantWild/citrus greening disease/google_0182.jpg
+PlantWild/citrus greening disease/google_0183.jpg
+PlantWild/citrus greening disease/google_0187.jpg
+PlantWild/citrus greening disease/google_0191.jpg
+PlantWild/citrus greening disease/google_0199.jpg
+PlantWild/citrus greening disease/google_0222.jpg
+PlantWild/citrus greening disease/google_0226.jpg
+PlantWild/citrus greening disease/google_0236.jpg
+PlantWild/citrus greening disease/google_0296.jpg
+PlantWild/corn gray leaf spot/google_0053.jpg
+PlantWild/corn gray leaf spot/google_0076.jpg
+PlantWild/corn gray leaf spot/google_0123.jpg
+PlantWild/corn gray leaf spot/google_0196.jpg
+PlantWild/corn northern leaf blight/google_0036.jpg
+PlantWild/corn northern leaf blight/google_0074.jpg
+PlantWild/corn rust/google_0186.jpg
+PlantWild/grape black rot/149.jpg
+PlantWild/grape black rot/156.jpg
+PlantWild/grape black rot/157.jpg
+PlantWild/grape black rot/170.jpg
+PlantWild/grape black rot/178.jpg
+PlantWild/grape black rot/193.jpg
+PlantWild/grape black rot/198.jpg
+PlantWild/grape black rot/199.jpg
+PlantWild/grape black rot/23.jpg
+PlantWild/grape black rot/28.jpg
+PlantWild/grape black rot/29.jpg
+PlantWild/grape black rot/31.jpg
+PlantWild/grape black rot/33.jpg
+PlantWild/grape black rot/39.jpg
+PlantWild/grape black rot/4.jpg
+PlantWild/grape black rot/40.jpg
+PlantWild/grape black rot/46.jpg
+PlantWild/grape black rot/49.jpg
+PlantWild/grape black rot/5.jpg
+PlantWild/grape black rot/53.jpg
+PlantWild/grape black rot/6.jpg
+PlantWild/grape black rot/9.jpg
+PlantWild/grape black rot/91.jpg
+PlantWild/grape black rot/96.jpg
+PlantWild/grape black rot/98.jpg
+PlantWild/grape black rot/google_0007.jpg
+PlantWild/grape black rot/google_0009.jpg
+PlantWild/grape black rot/google_0010.jpg
+PlantWild/grape black rot/google_0011.jpg
+PlantWild/grape black rot/google_0015.jpg
+PlantWild/grape black rot/google_0019.jpg
+PlantWild/grape black rot/google_0023.jpg
+PlantWild/grape black rot/google_0024.jpg
+PlantWild/grape black rot/google_0027.jpg
+PlantWild/grape black rot/google_0028.jpg
+PlantWild/grape black rot/google_0029.jpg
+PlantWild/grape black rot/google_0032.jpg
+PlantWild/grape black rot/google_0035.jpg
+PlantWild/grape black rot/google_0036 - Copy.jpg
+PlantWild/grape black rot/google_0037.jpg
+PlantWild/grape black rot/google_0044.jpg
+PlantWild/grape black rot/google_0050.jpg
+PlantWild/grape black rot/google_0061.jpg
+PlantWild/grape black rot/google_0063.jpg
+PlantWild/grape black rot/google_0066.jpg
+PlantWild/grape black rot/google_0077.jpg
+PlantWild/grape black rot/google_0080.jpg
+PlantWild/grape black rot/google_0083.jpg
+PlantWild/grape black rot/google_0087.jpg
+PlantWild/grape black rot/google_0090.jpg
+PlantWild/grape black rot/google_0092.jpg
+PlantWild/grape black rot/google_0097.jpg
+PlantWild/grape black rot/google_0101.jpg
+PlantWild/grape black rot/google_0118.jpg
+PlantWild/grape black rot/google_0131.jpg
+PlantWild/grape black rot/google_0135.jpg
+PlantWild/grape black rot/google_0142.jpg
+PlantWild/grape black rot/google_0143.jpg
+PlantWild/grape black rot/google_0153.jpg
+PlantWild/grape black rot/google_0158.jpg
+PlantWild/grape black rot/google_0161.jpg
+PlantWild/grape black rot/google_0166.jpg
+PlantWild/grape black rot/google_0204.jpg
+PlantWild/grape black rot/google_0230.jpg
+PlantWild/grape black rot/google_0341.jpg
+PlantWild/grape black rot/google_0356.jpg
+PlantWild/grape leaf/124.jpg
+PlantWild/grape leaf/24.jpg
+PlantWild/grape leaf/45.jpg
+PlantWild/grape leaf/88.jpg
+PlantWild/grape leaf/google_0010.jpg
+PlantWild/peach leaf/11.jpg
+PlantWild/peach leaf/143.jpg
+PlantWild/peach leaf/189.jpg
+PlantWild/peach leaf/205.jpg
+PlantWild/peach leaf/26.jpg
+PlantWild/peach leaf/32.jpg
+PlantWild/peach leaf/google_0015.jpg
+PlantWild/peach leaf/google_0063.jpg
+PlantWild/peach leaf/google_0136.jpg
+PlantWild/peach leaf/google_0396.jpg
+PlantWild/raspberry leaf/google_0138.jpg
+PlantWild/squash powdery mildew/google_0025.jpg
+PlantWild/strawberry leaf scorch/google_0018.jpg
+PlantWild/strawberry leaf scorch/google_0082.jpg
+PlantWild/strawberry leaf/11.jpg
+PlantWild/strawberry leaf/12.jpg
+PlantWild/strawberry leaf/16.jpg
+PlantWild/strawberry leaf/24.jpg
+PlantWild/strawberry leaf/26.jpg
+PlantWild/strawberry leaf/29.jpg
+PlantWild/strawberry leaf/49.jpg
+PlantWild/strawberry leaf/64.jpg
+PlantWild/strawberry leaf/68.jpg
+PlantWild/strawberry leaf/google_0006.jpg
+PlantWild/strawberry leaf/google_0015.jpg
+PlantWild/strawberry leaf/google_0022.jpg
+PlantWild/strawberry leaf/google_0057.jpg
+PlantWild/strawberry leaf/google_0064.jpg
+PlantWild/strawberry leaf/google_0075.jpg
+PlantWild/strawberry leaf/google_0076.jpg
+PlantWild/strawberry leaf/google_0079.jpg
+PlantWild/strawberry leaf/google_0082.jpg
+PlantWild/strawberry leaf/google_0083.jpg
+PlantWild/strawberry leaf/google_0086.jpg
+PlantWild/strawberry leaf/google_0089.jpg
+PlantWild/strawberry leaf/google_0099.jpg
+PlantWild/strawberry leaf/google_0132.jpg
+PlantWild/strawberry leaf/google_0142.jpg
+PlantWild/strawberry leaf/google_0163.jpg
+PlantWild/strawberry leaf/google_0207.jpg
+PlantWild/strawberry leaf/google_0244.jpg
+PlantWild/strawberry leaf/google_0245.jpg
+PlantWild/strawberry leaf/google_0256.jpg
+PlantWild/strawberry leaf/google_0258.jpg
+PlantWild/strawberry leaf/google_0278.jpg
+PlantWild/strawberry leaf/google_0294.jpg
+PlantWild/strawberry leaf/google_0296.jpg
+PlantWild/strawberry leaf/google_0324.jpg
+PlantWild/strawberry leaf/google_0330.jpg
+PlantWild/strawberry leaf/google_0368.jpg
+PlantWild/strawberry leaf/google_0394.jpg
+PlantWild/strawberry leaf/google_0402.jpg
+PlantWild/strawberry leaf/google_0417.jpg
+PlantWild/strawberry leaf/google_0477.jpg
+PlantWild/strawberry leaf/google_0485.jpg
+PlantWild/strawberry leaf/google_0498.jpg
+PlantWild/strawberry leaf/google_0502.jpg
+PlantWild/strawberry leaf/google_0505.jpg
+PlantWild/strawberry leaf/google_0506.jpg
+PlantWild/strawberry leaf/google_0524.jpg
+PlantWild/strawberry leaf/google_0543.jpg
+PlantWild/strawberry leaf/google_0546.jpg
+PlantWild/strawberry leaf/google_0574.jpg
+PlantWild/strawberry leaf/google_0599.jpg
+PlantWild/strawberry leaf/google_0604.jpg
+PlantWild/tomato bacterial leaf spot/108.jpg
+PlantWild/tomato bacterial leaf spot/122.jpg
+PlantWild/tomato bacterial leaf spot/147.jpg
+PlantWild/tomato bacterial leaf spot/180.jpg
+PlantWild/tomato bacterial leaf spot/33.jpg
+PlantWild/tomato bacterial leaf spot/45.jpg
+PlantWild/tomato bacterial leaf spot/6 - Copy.jpg
+PlantWild/tomato bacterial leaf spot/70.jpg
+PlantWild/tomato bacterial leaf spot/71.jpg
+PlantWild/tomato bacterial leaf spot/77.jpg
+PlantWild/tomato bacterial leaf spot/8.jpg
+PlantWild/tomato bacterial leaf spot/95.jpg
+PlantWild/tomato bacterial leaf spot/google_0037.jpg
+PlantWild/tomato bacterial leaf spot/google_0088.jpg
+PlantWild/tomato bacterial leaf spot/google_0126.jpg
+PlantWild/tomato bacterial leaf spot/google_0136.jpg
+PlantWild/tomato bacterial leaf spot/google_0171.jpg
+PlantWild/tomato bacterial leaf spot/google_0175.jpg
+PlantWild/tomato bacterial leaf spot/google_0405.jpg
+PlantWild/tomato early blight/136.jpg
+PlantWild/tomato early blight/159.jpg
+PlantWild/tomato early blight/173.jpg
+PlantWild/tomato early blight/194.jpg
+PlantWild/tomato early blight/216.jpg
+PlantWild/tomato early blight/218.jpg
+PlantWild/tomato early blight/25.jpg
+PlantWild/tomato early blight/28.jpg
+PlantWild/tomato early blight/39.jpg
+PlantWild/tomato early blight/87.jpg
+PlantWild/tomato early blight/89.jpg
+PlantWild/tomato early blight/google_0009.jpg
+PlantWild/tomato early blight/google_0021.jpg
+PlantWild/tomato early blight/google_0042.jpg
+PlantWild/tomato early blight/google_0047.jpg
+PlantWild/tomato early blight/google_0053.jpg
+PlantWild/tomato early blight/google_0060.jpg
+PlantWild/tomato early blight/google_0061.jpg
+PlantWild/tomato early blight/google_0065.jpg
+PlantWild/tomato early blight/google_0066.jpg
+PlantWild/tomato early blight/google_0100.jpg
+PlantWild/tomato early blight/google_0123.jpg
+PlantWild/tomato early blight/google_0173.jpg
+PlantWild/tomato early blight/google_0187.jpg
+PlantWild/tomato early blight/google_0235.jpg
+PlantWild/tomato early blight/google_0264.jpg
+PlantWild/tomato early blight/google_0269.jpg
+PlantWild/tomato early blight/google_0271.jpg
+PlantWild/tomato early blight/google_0272.jpg
+PlantWild/tomato early blight/google_0284.jpg
+PlantWild/tomato early blight/google_0290.jpg
+PlantWild/tomato early blight/google_0292.jpg
+PlantWild/tomato early blight/google_0295.jpg
+PlantWild/tomato early blight/google_0328.jpg
+PlantWild/tomato early blight/google_0373.jpg
+PlantWild/tomato early blight/google_0383.jpg
+PlantWild/tomato late blight/107.jpg
+PlantWild/tomato late blight/12.jpg
+PlantWild/tomato late blight/177.jpg
+PlantWild/tomato late blight/18.jpg
+PlantWild/tomato late blight/181.jpg
+PlantWild/tomato late blight/201.jpg
+PlantWild/tomato late blight/3.jpg
+PlantWild/tomato late blight/31.jpg
+PlantWild/tomato late blight/40.jpg
+PlantWild/tomato late blight/57.jpg
+PlantWild/tomato late blight/add (3).jpg
+PlantWild/tomato late blight/add (9).jpg
+PlantWild/tomato late blight/google_0001.jpg
+PlantWild/tomato late blight/google_0008.jpg
+PlantWild/tomato late blight/google_0013.jpg
+PlantWild/tomato late blight/google_0022.jpg
+PlantWild/tomato late blight/google_0031.jpg
+PlantWild/tomato late blight/google_0048.jpg
+PlantWild/tomato late blight/google_0074.jpg
+PlantWild/tomato late blight/google_0080.jpg
+PlantWild/tomato late blight/google_0089.jpg
+PlantWild/tomato late blight/google_0126.jpg
+PlantWild/tomato late blight/google_0133.jpg
+PlantWild/tomato late blight/google_0142.jpg
+PlantWild/tomato late blight/google_0157.jpg
+PlantWild/tomato late blight/google_0189.jpg
+PlantWild/tomato late blight/google_0207.jpg
+PlantWild/tomato late blight/google_0222.jpg
+PlantWild/tomato late blight/google_0268.jpg
+PlantWild/tomato leaf mold/17.jpg
+PlantWild/tomato leaf mold/268.jpg
+PlantWild/tomato leaf mold/google_0022.jpg
+PlantWild/tomato leaf/140.jpg
+PlantWild/tomato leaf/150.jpg
+PlantWild/tomato leaf/53.jpg
+PlantWild/tomato leaf/google_0017.jpg
+PlantWild/tomato leaf/google_0095.jpg
+PlantWild/tomato leaf/google_0104.jpg
+PlantWild/tomato leaf/google_0152.jpg
+PlantWild/tomato leaf/google_0222.jpg
+PlantWild/tomato leaf/google_0275.jpg
+PlantWild/tomato leaf/google_0284.jpg
+PlantWild/tomato leaf/google_0289.jpg
+PlantWild/tomato leaf/google_0302.jpg
+PlantWild/tomato leaf/google_0309.jpg
+PlantWild/tomato leaf/google_0320.jpg
+PlantWild/tomato leaf/google_0330.jpg
+PlantWild/tomato leaf/google_0333.jpg
+PlantWild/tomato leaf/google_0346.jpg
+PlantWild/tomato leaf/google_0354.jpg
+PlantWild/tomato leaf/google_0355.jpg
+PlantWild/tomato leaf/google_0417.jpg
+PlantWild/tomato leaf/google_0443.jpg
+PlantWild/tomato leaf/google_0445.jpg
+PlantWild/tomato leaf/google_0448.jpg
+PlantWild/tomato leaf/google_0450.jpg
+PlantWild/tomato leaf/google_0468.jpg
+PlantWild/tomato leaf/google_0481.jpg
+PlantWild/tomato leaf/google_0577.jpg
+PlantWild/tomato leaf/google_0589.jpg
+PlantWild/tomato leaf/google_0593.jpg
+PlantWild/tomato mosaic virus/112.jpg
+PlantWild/tomato mosaic virus/19.jpg
+PlantWild/tomato mosaic virus/google_0051.jpg
+PlantWild/tomato mosaic virus/google_0092.jpg
+PlantWild/tomato mosaic virus/google_0116.jpg
+PlantWild/tomato mosaic virus/google_0165.jpg
+PlantWild/tomato mosaic virus/google_0199.jpg
+PlantWild/tomato mosaic virus/google_0228.jpg
+PlantWild/tomato septoria leaf spot/148.jpg
+PlantWild/tomato septoria leaf spot/162.jpg
+PlantWild/tomato septoria leaf spot/26.jpg
+PlantWild/tomato septoria leaf spot/61.jpg
+PlantWild/tomato septoria leaf spot/google_0007.jpg
+PlantWild/tomato septoria leaf spot/google_0040.jpg
+PlantWild/tomato septoria leaf spot/google_0062.jpg
+PlantWild/tomato septoria leaf spot/google_0065.jpg
+PlantWild/tomato septoria leaf spot/google_0157.jpg
+PlantWild/tomato septoria leaf spot/google_0241.jpg
+PlantWild/tomato septoria leaf spot/google_0243.jpg
+PlantWild/tomato yellow leaf curl virus/165.jpg
+PlantWild/tomato yellow leaf curl virus/google_0009.jpg
+PlantWild/tomato yellow leaf curl virus/google_0027.jpg
+PlantWild/tomato yellow leaf curl virus/google_0056.jpg

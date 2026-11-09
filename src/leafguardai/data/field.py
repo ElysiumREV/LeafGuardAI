@@ -5,6 +5,8 @@ Cada dataset fica em data/raw/field/<Nome>/; `FIELD_SOURCES` diz quais pastas us
 classe do PlantVillage cada uma corresponde. Pastas fora do mapeamento são ignoradas (com aviso).
 """
 import json
+import re
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +17,7 @@ FIELD_ROOT = PROJECT_ROOT / "data" / "raw" / "field"
 PLANTVILLAGE_PATH = PROJECT_ROOT / "data" / "raw" / "PlantVillage" / "color"
 EXTERNAL_TEST_PATH = PROJECT_ROOT / "data" / "external_test"
 HASH_CACHE_PATH = PROJECT_ROOT / "data" / "raw" / ".dhash_cache_v2.json"
+EXCLUDE_LIST_PATH = Path(__file__).with_name("field_exclude.txt")
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
 # Duas fotos são consideradas a mesma imagem se os DOIS dHash (horizontal e vertical) diferirem em
@@ -147,6 +150,9 @@ FIELD_SOURCES = {
     },
     "TomatoDIU": {
         # Folhas destacadas fotografadas com iPhone sobre fundo claro (Daffodil International University).
+        # A mesma folha aparece em várias fotos (de ângulos diferentes, que o dHash não agrupa):
+        # fica fora do split comum, para não haver a mesma folha no treino e no teste (split_train_only).
+        "train_only": True,
         "license": "CC BY 4.0",
         "subdirs": [""],
         "mapping": {
@@ -160,6 +166,31 @@ FIELD_SOURCES = {
         },
     },
 }
+
+
+def split_train_only(samples, holdout=0.2):
+    """Separa as amostras "train_only" em (treino, reserva). A reserva são as últimas fotos de cada
+    classe pela numeração do arquivo: fotos da mesma folha foram tiradas em sequência, então um
+    corte por numeração evita ter a mesma folha dos dois lados. A reserva só serve para medir à parte."""
+    by_class = defaultdict(list)
+    for sample in samples:
+        if FIELD_SOURCES[sample["dataset"]].get("train_only"):
+            by_class[(sample["dataset"], sample["label"])].append(sample)
+    train, reserved = [], []
+    for items in by_class.values():
+        items.sort(key=lambda s: int(re.search(r"(\d+)", s["image"].stem).group(1)))
+        cut = len(items) - round(len(items) * holdout)
+        train += items[:cut]
+        reserved += items[cut:]
+    return train, reserved
+
+
+def _excluded_paths():
+    """Fotos ignoradas por field_exclude.txt (caminhos relativos a data/raw/field)."""
+    if not EXCLUDE_LIST_PATH.exists():
+        return set()
+    lines = EXCLUDE_LIST_PATH.read_text(encoding="utf-8").splitlines()
+    return {line for line in lines if line and not line.startswith("#")}
 
 
 def _image_files(folder):
@@ -302,4 +333,10 @@ def get_field_samples(datasets=None, verbose=True):
         group_names[root] = min(group_names.get(root, name), name)
     for index, sample in enumerate(samples):
         sample["group"] = f"field:{group_names[find(index)]}"
-    return samples
+
+    # A exclusão vem depois do agrupamento para não mudar o grupo (e o split) das fotos que ficam.
+    excluded = _excluded_paths()
+    kept = [s for s in samples if s["image"].relative_to(FIELD_ROOT).as_posix() not in excluded]
+    if verbose:
+        print(f"   -> removidas pela lista de exclusão: {len(samples) - len(kept)}", flush=True)
+    return kept

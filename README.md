@@ -198,6 +198,8 @@ As pastas de cada dataset são associadas às classes do PlantVillage em `src/le
 - **Tomato Leaf Disease Classification Dataset in Pakistan** — [Mendeley Data](https://data.mendeley.com/datasets/3mbnb82mxd) (CC BY 4.0). O script usa só as 830 fotos originais, sem as cópias aumentadas.
 - **Tomato leaf diseases** — Daffodil International University. [Mendeley Data](https://data.mendeley.com/datasets/93h9p62kg4) (CC BY 4.0). Folhas destacadas fotografadas sobre fundo claro; o script baixa só as classes que existem no PlantVillage.
 
+O treino ignora as fotos listadas em `src/leafguardai/data/field_exclude.txt` (slides, banners e fotos de fruto do PlantWild, escolhidas por triagem automática). As fotos do TomatoDIU não entram na validação nem no teste de campo, porque a mesma folha aparece em várias fotos: 80% vão para o treino e os 20% finais de cada classe, pela numeração dos arquivos, ficam reservados.
+
 ## 🏋️ Treinamento
 
 ```bash

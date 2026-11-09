@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from leafguardai.data.dataset import PlantDataset
 from leafguardai.data.loader import get_classes, get_images_by_class
-from leafguardai.data.field import FIELD_SOURCES, get_field_samples
+from leafguardai.data.field import FIELD_SOURCES, get_field_samples, split_train_only
 from leafguardai.data.split import create_dataloaders, save_split, split_by_group_hash, split_samples
 from leafguardai.model.classifier import (
     create_model,
@@ -323,13 +323,15 @@ def main():
         samples,
         seed=args.seed,
     )
+    train_only, _ = split_train_only(field_samples)
     field_train, field_validation, field_test = split_by_group_hash(
-        field_samples,
+        [s for s in field_samples if not FIELD_SOURCES[s["dataset"]].get("train_only")],
         train_ratio=0.60,
         validation_ratio=0.15,
         test_ratio=0.25,
         seed=args.seed,
     )
+    field_train += train_only
     save_split(
         output_dir / "split.json",
         train_samples + field_train,
