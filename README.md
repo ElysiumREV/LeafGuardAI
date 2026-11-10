@@ -126,7 +126,7 @@ A interface gráfica classifica a imagem de uma folha selecionada utilizando o m
 
 O app mostra as 3 classes mais prováveis e avisa quando a confiança é baixa. Abaixo de 70%, o resultado aparece como "confiança moderada"; abaixo de 50%, como "resultado incerto", e nesse caso o app não pede orientações de tratamento ao Gemini e sugere outra foto. As faixas ficam em `CONFIDENCE_HIGH` e `CONFIDENCE_LOW` (`src/leafguardai/model/infer.py`), medidas em fotos de campo: acima de 70%, o modelo acerta cerca de 90% das vezes.
 
-O campo opcional **Qual é a planta?** restringe a resposta às classes da planta escolhida, o que elimina a confusão entre plantas: nas fotos de campo de teste, o acerto sobe de 78,2% para 85,1% (83,7% sem contar as plantas com uma classe só). Nesse modo, a confiança só é considerada alta a partir de 90%. O campo lista apenas as plantas com duas ou mais classes no modelo; nas demais, use "Não sei / outra planta".
+O campo opcional **Qual é a planta?** restringe a resposta às classes da planta escolhida, o que elimina a confusão entre plantas: nas fotos de campo de teste, o acerto sobe de 78,8% para 85,5% (83,8% sem contar as plantas com uma classe só). Nesse modo, a confiança só é considerada alta a partir de 90%. O campo lista apenas as plantas com duas ou mais classes no modelo; nas demais, use "Não sei / outra planta".
 
 ## 📁 Dataset
 

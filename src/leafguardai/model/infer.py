@@ -22,10 +22,10 @@ PREPROCESSING_PATH = MODELS_DIR / "preprocessing.json"
 MODEL_URL = "https://github.com/ElysiumREV/LeafGuardAI/releases/latest/download/leafguardai-model.zip"
 MODEL_FILES = ("best_model.pt", "classes.json", "preprocessing.json")
 
-# Faixas de confiança do top-1, medidas em ~4.400 fotos de campo nunca vistas no treino
-# (scripts/evaluate_folder.py): acima de 70% o modelo acerta ~90%; entre 50% e 70%, ~59%;
-# abaixo de 50%, ~40%. Com a planta informada, a confiança sobe sem o acerto acompanhar
-# (70-90%: só ~68%; acima de 90%: ~95%), por isso o limite de "alta" é maior.
+# Faixas de confiança do top-1, medidas em ~4.300 fotos de campo nunca vistas no treino
+# (scripts/evaluate_folder.py): acima de 70% o modelo acerta ~91%; entre 50% e 70%, ~64%;
+# abaixo de 50%, ~45%. Com a planta informada, a confiança sobe sem o acerto acompanhar
+# (70-90%: só ~71%; acima de 90%: ~95%), por isso o limite de "alta" é maior.
 # Recalibrar a cada novo modelo.
 CONFIDENCE_HIGH = 0.70
 CONFIDENCE_HIGH_WITH_PLANT = 0.90
