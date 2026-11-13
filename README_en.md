@@ -103,7 +103,7 @@ The `uv` tool will automatically update both the `pyproject.toml` and `uv.lock` 
 
 ### Setting up the Gemini API
 
-Create a key in [Google AI Studio](https://aistudio.google.com/api-keys) and paste it into the "Insira a API Key" field at the bottom of the interface.
+Create a key in [Google AI Studio](https://aistudio.google.com/api-keys) and paste it into the key field at the bottom of the interface (use the "Mostrar" button to check what you pasted). To avoid pasting it every time, set the `GEMINI_API_KEY` environment variable or create a `.env` file (see `.env.example`) in the folder you launch the app from: the field comes pre-filled.
 
 ### Running the GUI
 

@@ -2,6 +2,7 @@ import customtkinter as ctk
 from customtkinter import filedialog
 from google import genai
 from PIL import Image, ImageOps
+import os
 import queue
 import re
 import sys
@@ -172,6 +173,10 @@ class MainWindow(ctk.CTk):
             show="*",
         )
         self.api_key_entry.pack(side="left", padx=(0, 8))
+        # Chave vinda do ambiente / .env: já vem preenchida (e mascarada), mas dá para trocar.
+        env_key = (os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
+        if env_key:
+            self.api_key_entry.insert(0, env_key)
 
         self.toggle_key_btn = ctk.CTkButton(
             key_frame,
