@@ -313,7 +313,18 @@ class MainWindow(ctk.CTk):
 
         if not model_available():
             status("Baixando o modelo (só na primeira vez)...")
-            download_model()
+            last = [None]
+
+            def on_progress(done, total):
+                if total:
+                    key, detail = int(done * 100 / total), f"{int(done * 100 / total)}%"
+                else:
+                    key, detail = done // 2_000_000, f"{done / 1e6:.0f} MB"
+                if key != last[0]:  # só atualiza a tela quando o valor exibido muda
+                    last[0] = key
+                    status(f"Baixando o modelo (só na primeira vez)... {detail}")
+
+            download_model(progress=on_progress)
 
         status("Carregando modelo...")
 

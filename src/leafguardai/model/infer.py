@@ -1,3 +1,4 @@
+import hashlib
 import json
 import shutil
 import tempfile
@@ -60,29 +61,92 @@ def model_available():
     return CHECKPOINT_PATH.exists() and CLASSES_PATH.exists()
 
 
-def download_model(url=None):
-    """Baixa o modelo do GitHub Release e extrai os arquivos em models/."""
+MAX_PACKAGE_BYTES = 500 * 1024 * 1024  # limite de segurança para o zip e o conteúdo extraído
+
+
+class ModelDownloadError(FileNotFoundError):
+    """Falha ao baixar ou validar o modelo (herda de FileNotFoundError por compatibilidade)."""
+
+
+def _download_file(url, destination, progress=None):
+    with urllib.request.urlopen(url, timeout=60) as response, open(destination, "wb") as file:
+        total = int(response.headers.get("Content-Length") or 0)
+        if total > MAX_PACKAGE_BYTES:
+            raise ModelDownloadError(f"O pacote em {url} é grande demais ({total / 1e6:.0f} MB).")
+        done = 0
+        while chunk := response.read(256 * 1024):
+            done += len(chunk)
+            if done > MAX_PACKAGE_BYTES:
+                raise ModelDownloadError(f"O pacote em {url} é grande demais.")
+            file.write(chunk)
+            if progress:
+                progress(done, total)
+
+
+def _expected_sha256(url):
+    """Lê o hash esperado de `<url>.sha256` (formato do sha256sum: '<hash>  <arquivo>')."""
+    with urllib.request.urlopen(url + ".sha256", timeout=60) as response:
+        text = response.read(4096).decode("utf-8", errors="replace").strip()
+    token = text.split()[0].lower() if text else ""
+    if len(token) != 64 or any(c not in "0123456789abcdef" for c in token):
+        raise ModelDownloadError(f"O arquivo {url}.sha256 não contém um SHA-256 válido.")
+    return token
+
+
+def _sha256_of(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as file:
+        while chunk := file.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def download_model(url=None, progress=None):
+    """Baixa o modelo do GitHub Release, confere o SHA-256 e extrai os arquivos em models/.
+
+    `progress(baixado, total)` é chamado durante o download (total é 0 se o servidor não informar).
+    O hash vem de `<url>.sha256`, publicado junto do zip por scripts/package_model.py: ele
+    detecta download corrompido ou incompleto; não protege contra um release adulterado,
+    já que o hash é publicado no mesmo lugar do zip.
+    """
     url = url or MODEL_URL
     with tempfile.TemporaryDirectory() as temp:
         archive = Path(temp) / "model.zip"
         try:
-            with urllib.request.urlopen(url, timeout=60) as response, open(archive, "wb") as file:
-                shutil.copyfileobj(response, file)
+            expected = _expected_sha256(url)
+            _download_file(url, archive, progress)
+        except ModelDownloadError:
+            raise
         except OSError as error:
-            raise FileNotFoundError(
+            raise ModelDownloadError(
                 f"Não encontrei um modelo em {MODELS_DIR} e não consegui baixá-lo de {url} ({error}). "
                 "Verifique a conexão ou rode scripts/train.py para treinar um modelo."
             ) from error
 
+        actual = _sha256_of(archive)
+        if actual != expected:
+            raise ModelDownloadError(
+                "O modelo baixado não confere com o SHA-256 publicado (download corrompido ou "
+                "release alterado). Nada foi instalado; tente novamente."
+            )
+
+        staging = Path(temp) / "staging"
+        staging.mkdir()
         with zipfile.ZipFile(archive) as package:
-            names = set(package.namelist())
-            missing = [name for name in MODEL_FILES if name not in names]
+            sizes = {info.filename: info.file_size for info in package.infolist()}
+            missing = [name for name in MODEL_FILES if name not in sizes]
             if missing:
-                raise FileNotFoundError(f"O pacote baixado não contém: {', '.join(missing)}")
-            MODELS_DIR.mkdir(parents=True, exist_ok=True)
+                raise ModelDownloadError(f"O pacote baixado não contém: {', '.join(missing)}")
+            if sum(sizes[name] for name in MODEL_FILES) > MAX_PACKAGE_BYTES:
+                raise ModelDownloadError("O conteúdo do pacote é grande demais.")
+            # Só os nomes esperados são extraídos, direto na pasta temporária (sem caminhos do zip).
             for name in MODEL_FILES:
-                with package.open(name) as source, open(MODELS_DIR / name, "wb") as target:
+                with package.open(name) as source, open(staging / name, "wb") as target:
                     shutil.copyfileobj(source, target)
+
+        MODELS_DIR.mkdir(parents=True, exist_ok=True)
+        for name in MODEL_FILES:
+            shutil.move(str(staging / name), MODELS_DIR / name)
 
 
 def ensure_model():

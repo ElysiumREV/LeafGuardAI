@@ -122,7 +122,7 @@ ou:
 uv run leafguardai
 ```
 
-A interface gráfica classifica a imagem de uma folha selecionada utilizando o modelo em `models/`. Não é preciso treinar: se a pasta `models/` não tiver um modelo, o app baixa o modelo treinado do [release mais recente](https://github.com/ElysiumREV/LeafGuardAI/releases/latest) na primeira análise (cerca de 16 MB). A linha de comando (`scripts/predict.py`) faz o mesmo.
+A interface gráfica classifica a imagem de uma folha selecionada utilizando o modelo em `models/`. Não é preciso treinar: se não houver um modelo, o app baixa o modelo treinado do [release mais recente](https://github.com/ElysiumREV/LeafGuardAI/releases/latest) na primeira análise (cerca de 16 MB). A linha de comando (`scripts/predict.py`) faz o mesmo. O modelo fica em `models/` quando você roda do repositório, ou na pasta de dados do usuário (ex.: `~/.local/share/leafguardai/models`) quando o app é instalado como pacote; a variável `LEAFGUARDAI_MODELS_DIR` sobrescreve os dois.
 
 O app mostra as 3 classes mais prováveis e avisa quando a confiança é baixa. Abaixo de 70%, o resultado aparece como "confiança moderada"; abaixo de 50%, como "resultado incerto", e nesse caso o app não pede orientações de tratamento ao Gemini e sugere outra foto. As faixas ficam em `CONFIDENCE_HIGH` e `CONFIDENCE_LOW` (`src/leafguardai/model/infer.py`), medidas em fotos de campo: acima de 70%, o modelo acerta cerca de 90% das vezes.
 
@@ -288,7 +288,7 @@ O modelo treinado não fica no repositório: ele é publicado como arquivo de um
 uv run python scripts/package_model.py
 ```
 
-Isso gera `dist/leafguardai-model.zip`, com `best_model.pt`, `classes.json`, `preprocessing.json` e `metrics.json` (use `--models-dir` para empacotar outra pasta). No GitHub, crie um release (ex.: `v1.0.0`) e anexe esse arquivo **com exatamente esse nome**. O app sempre baixa o modelo do release mais recente.
+Isso gera `dist/leafguardai-model.zip` e `dist/leafguardai-model.zip.sha256` (o hash que o app confere antes de instalar). O zip tem `best_model.pt`, `classes.json`, `preprocessing.json` e `metrics.json` (use `--models-dir` para empacotar outra pasta). No GitHub, crie um release (ex.: `v1.0.0`) e anexe **os dois arquivos com exatamente esses nomes**. O app sempre baixa o modelo do release mais recente.
 
 ## 📊 Exploração do Dataset
 

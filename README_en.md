@@ -117,7 +117,7 @@ or:
 uv run leafguardai
 ```
 
-The GUI classifies a selected leaf image with the model in `models/`. No training is needed: if `models/` has no model, the app downloads the trained model from the [latest release](https://github.com/ElysiumREV/LeafGuardAI/releases/latest) on the first analysis (about 16 MB). The command line (`scripts/predict.py`) does the same.
+The GUI classifies a selected leaf image with the model in `models/`. No training is needed: if there is no model, the app downloads the trained model from the [latest release](https://github.com/ElysiumREV/LeafGuardAI/releases/latest) on the first analysis (about 16 MB). The command line (`scripts/predict.py`) does the same. The model lives in `models/` when running from the repository, or in the user data folder (e.g. `~/.local/share/leafguardai/models`) when the app is installed as a package; the `LEAFGUARDAI_MODELS_DIR` variable overrides both.
 
 The app shows the 3 most likely classes and warns when confidence is low. Below 70%, the result is shown as "moderate confidence"; below 50%, as "uncertain result", and in that case the app does not ask Gemini for treatment guidance and suggests taking another photo. The thresholds are `CONFIDENCE_HIGH` and `CONFIDENCE_LOW` (`src/leafguardai/model/infer.py`), measured on field photos: above 70%, the model is right about 90% of the time.
 
@@ -287,7 +287,7 @@ The trained model is not stored in the repository: it is published as a release 
 uv run python scripts/package_model.py
 ```
 
-This creates `dist/leafguardai-model.zip`, with `best_model.pt`, `classes.json`, `preprocessing.json` and `metrics.json` (use `--models-dir` to package another folder). On GitHub, create a release (e.g. `v1.0.0`) and attach this file **with exactly this name**. The app always downloads the model from the latest release.
+This creates `dist/leafguardai-model.zip` and `dist/leafguardai-model.zip.sha256` (the hash the app checks before installing). The zip has `best_model.pt`, `classes.json`, `preprocessing.json` and `metrics.json` (use `--models-dir` to package another folder). On GitHub, create a release (e.g. `v1.0.0`) and attach **both files with exactly these names**. The app always downloads the model from the latest release.
 
 ## 📊 Dataset Exploration
 

@@ -5,11 +5,13 @@ Uso:
     uv run python scripts/package_model.py --models-dir models_novo
 
 Gera dist/leafguardai-model.zip com best_model.pt, classes.json e preprocessing.json
-(e metrics.json, se existir). Publique esse arquivo como asset de um release no GitHub,
-com exatamente este nome: o app baixa o modelo de
+(e metrics.json, se existir) e dist/leafguardai-model.zip.sha256 com o hash do zip.
+Publique OS DOIS arquivos como assets de um release no GitHub, com exatamente estes nomes
+(o app confere o hash antes de instalar o modelo): o app baixa o modelo de
 https://github.com/ElysiumREV/LeafGuardAI/releases/latest/download/leafguardai-model.zip
 """
 import argparse
+import hashlib
 import json
 import zipfile
 from pathlib import Path
@@ -35,7 +37,12 @@ def main():
             if (args.models_dir / name).exists():
                 package.write(args.models_dir / name, name)
 
+    digest = hashlib.sha256(args.output.read_bytes()).hexdigest()
+    checksum_path = args.output.with_name(args.output.name + ".sha256")
+    checksum_path.write_text(f"{digest}  {args.output.name}\n", encoding="utf-8")
+
     print(f"Pacote criado: {args.output} ({args.output.stat().st_size / 1e6:.1f} MB)")
+    print(f"SHA-256: {checksum_path} (publique os DOIS arquivos no release)")
     metrics_path = args.models_dir / "metrics.json"
     if metrics_path.exists():
         metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
