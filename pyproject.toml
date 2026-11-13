@@ -35,3 +35,8 @@ explicit = true
 [tool.uv.sources]
 torch = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
 torchvision = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]

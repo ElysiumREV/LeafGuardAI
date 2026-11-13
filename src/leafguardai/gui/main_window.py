@@ -4,12 +4,18 @@ from google import genai
 from PIL import Image, ImageOps
 import os
 import queue
-import re
 import sys
 import threading
 import tkinter as tk
 from pathlib import Path
 
+from leafguardai.ai.gemini import (
+    FALLBACK_MODELS,
+    GuidanceError,
+    describe_error,
+    discover_models,
+    request_guidance,
+)
 from leafguardai.model.infer import (
     PLANT_CHOICES,
     confidence_level,
@@ -23,40 +29,7 @@ from leafguardai.model.infer import (
 
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
-UNKNOWN_PLANT ="Não sei / outra planta"
-
-# Lista de reserva, usada só se não for possível consultar os modelos da API.
-FALLBACK_MODELS = [
-    "gemini-3.7-flash",
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-]
-MAX_AUTO_CANDIDATES = 6
-_EXCLUDED = ("tts", "image", "live", "audio", "embedding", "robotics", "computer-use", "vision", "thinking", "learnlm")
-_MODEL_RE = re.compile(r"^gemini-(\d+(?:\.\d+)?)-flash(-lite)?(?:-(.+))?$")
-
-
-def discover_models(client):
-    """Consulta a API e devolve os modelos Gemini Flash disponíveis, do mais novo ao mais antigo."""
-    found = []
-    for model in client.models.list():
-        name = (model.name or "").removeprefix("models/")
-        actions = model.supported_actions or []
-        if actions and "generateContent" not in actions:
-            continue
-        if any(word in name for word in _EXCLUDED):
-            continue
-        match = _MODEL_RE.match(name)
-        if not match:
-            continue
-        version = tuple(int(x) for x in match.group(1).split("."))
-        is_lite = bool(match.group(2))
-        suffix = match.group(3) or ""
-        # Estáveis (sem sufixo) vêm antes de preview/exp/datados da mesma versão.
-        found.append((tuple(-v for v in version), is_lite, suffix != "", name))
-    found.sort()
-    return [item[3] for item in found]
-
+UNKNOWN_PLANT = "Não sei / outra planta"
 
 AUTO_MODEL = "Automático (troca se estiver ocupado)"
 
@@ -256,7 +229,7 @@ class MainWindow(ctk.CTk):
         def apply():
             self.refresh_models_btn.configure(state="normal", text="Atualizar modelos")
             if error is not None:
-                self.response_label.configure(text=self._describe_ai_error(error))
+                self.response_label.configure(text=describe_error(error))
             elif not models:
                 self.response_label.configure(text="Nenhum modelo Gemini Flash disponível para esta chave.")
             else:
@@ -465,77 +438,26 @@ class MainWindow(ctk.CTk):
         self.response_label.configure(text=response)
         self.ai_label.configure(text=note)
 
-    @staticmethod
-    def _is_retryable(error):
-        """Erros em que vale tentar outro modelo (alto uso, cota, indisponível)."""
-        code = getattr(error, "code", None) or getattr(error, "status_code", None)
-        low = str(error).lower()
-        return code in (404, 429, 500, 503, 504) or any(
-            w in low
-            for w in ("overloaded", "unavailable", "high demand", "resource_exhausted", "quota", "not found")
-        )
-
     def _fetch_ai_guidance(self, prompt, api_key, selected_model, rid):
         client = genai.Client(api_key=api_key)
-
-        if selected_model == AUTO_MODEL:
-            try:
-                candidates = discover_models(client)[:MAX_AUTO_CANDIDATES]
-            except Exception as error:
-                print(f"[Gemini] listagem de modelos falhou: {error}", file=sys.stderr)
-                candidates = []
-            candidates = candidates or list(FALLBACK_MODELS)
-        else:
-            candidates = [selected_model]
-        failed = []
-        last_error = None
-
-        for model in candidates:
-            try:
-                interaction = client.interactions.create(model=model, input=prompt)
-            except Exception as error:
-                last_error = error
-                print(f"[Gemini] {model}: {type(error).__name__}: {error}", file=sys.stderr)
-                if self._is_retryable(error):
-                    failed.append(model)
-                    continue
-                break
-
-            text = interaction.output_text
-            note = f"Modelo: {model}"
-            if failed:
-                note += f" (indisponíveis agora: {', '.join(failed)})"
-            note += (
-                "\nEsta resposta foi gerada por IA. Para obter orientações mais confiáveis "
-                "e adequadas ao caso, recomenda-se consultar um profissional especializado."
-            )
-            self._post(lambda: self._show_ai(rid, text, note))
+        model = None if selected_model == AUTO_MODEL else selected_model
+        try:
+            guidance = request_guidance(client, prompt, model)
+        except GuidanceError as error:
+            message = describe_error(error.error)
+            if error.failed:
+                message = f"Modelos tentados sem sucesso: {', '.join(error.failed)}.\n\n{message}"
+            self._post(lambda: self._show_ai(rid, message, ""))
             return
 
-        message = self._describe_ai_error(last_error)
-        if failed:
-            message = f"Modelos tentados sem sucesso: {', '.join(failed)}.\n\n{message}"
-        self._post(lambda: self._show_ai(rid, message, ""))
-
-    @staticmethod
-    def _describe_ai_error(error):
-        raw = str(error)
-        low = raw.lower()
-        code = getattr(error, "code", None) or getattr(error, "status_code", None)
-
-        if code in (400, 401, 403) or "api key" in low or "api_key" in low or "permission" in low:
-            reason = "Chave da API inválida ou sem permissão. Confira se copiou a chave inteira."
-        elif code == 404 or "not found" in low:
-            reason = "Modelo não encontrado para a sua chave."
-        elif code == 429 or "quota" in low or "resource_exhausted" in low:
-            reason = "Limite de uso (cota) da API atingido. Tente mais tarde."
-        elif any(w in low for w in ("connect", "timeout", "resolve", "network")):
-            reason = "Falha de conexão. Verifique sua internet."
-        else:
-            reason = "Não foi possível obter as orientações da IA."
-
-        print(f"[Gemini] {type(error).__name__}: {raw}", file=sys.stderr)
-        return f"{reason}\n\nDetalhe: {type(error).__name__}: {raw[:300]}"
+        note = f"Modelo: {guidance.model}"
+        if guidance.failed:
+            note += f" (indisponíveis agora: {', '.join(guidance.failed)})"
+        note += (
+            "\nEsta resposta foi gerada por IA. Para obter orientações mais confiáveis "
+            "e adequadas ao caso, recomenda-se consultar um profissional especializado."
+        )
+        self._post(lambda: self._show_ai(rid, guidance.text, note))
 
     def change_theme(self):
         if ctk.get_appearance_mode().lower() == "dark":
