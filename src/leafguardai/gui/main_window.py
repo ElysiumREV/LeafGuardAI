@@ -1,7 +1,8 @@
 import customtkinter as ctk
 from customtkinter import filedialog
 from google import genai
-from PIL import Image
+from PIL import Image, ImageOps
+import queue
 import re
 import sys
 import threading
@@ -74,7 +75,17 @@ class MainWindow(ctk.CTk):
         self._classes = None
         self._device = None
 
+        self.minsize(480, 520)
+        self._request_id = 0
+        self._analyzing = False
+        self._wrap_job = None
+        self._text_labels = []
+        self._ui_queue = queue.Queue()
+
         self.create_widgets()
+        self._text_labels = [self.result_label, self.response_label, self.ai_label]
+        self.bind("<Configure>", self._on_resize)
+        self._drain_ui_queue()
 
     def _set_app_icon(self):
         try:
@@ -88,36 +99,40 @@ class MainWindow(ctk.CTk):
             print(f"[Ícone] não foi possível carregar: {error}", file=sys.stderr)
 
     def create_widgets(self):
+        self.body = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        self.body.pack(fill="both", expand=True)
         self.select_button = ctk.CTkButton(
-            self,
+            self.body,
             text="Selecionar imagem",
             command=self.select_image,
         )
         self.select_button.pack(pady=(24, 8))
 
-        self.plant_label = ctk.CTkLabel(self, text="Qual é a planta? (opcional)")
+        self.plant_label = ctk.CTkLabel(self.body, text="Qual é a planta? (opcional)")
         self.plant_label.pack(pady=(8, 0))
 
         self.plant_menu = ctk.CTkOptionMenu(
-            self,
+            self.body,
             values=[UNKNOWN_PLANT, *sorted(PLANT_CHOICES)],
         )
         self.plant_menu.set(UNKNOWN_PLANT)
         self.plant_menu.pack(pady=(4, 8))
 
         self.analyze_button = ctk.CTkButton(
-            self,
+            self.body,
             text="Analisar",
             command=self.analyze_image,
             state="disabled",
         )
         self.analyze_button.pack(pady=8)
 
-        self.image_label = ctk.CTkLabel(self, text="Nenhuma imagem selecionada.")
+        self.progress = ctk.CTkProgressBar(self.body, mode="indeterminate", width=300)
+
+        self.image_label = ctk.CTkLabel(self.body, text="Nenhuma imagem selecionada.")
         self.image_label.pack(padx=20, pady=12)
 
         self.result_label = ctk.CTkLabel(
-            self,
+            self.body,
             text="Selecione uma folha e clique em Analisar.",
             justify="left",
             wraplength=640,
@@ -125,7 +140,7 @@ class MainWindow(ctk.CTk):
         self.result_label.pack(padx=24, pady=12)
 
         self.response_label = ctk.CTkLabel(
-                    self,
+                    self.body,
                     text="",
                     justify="left",
                     wraplength=640,
@@ -133,7 +148,7 @@ class MainWindow(ctk.CTk):
         self.response_label.pack(padx=24, pady=12)
 
         self.ai_label = ctk.CTkLabel(
-                            self,
+                            self.body,
                             text="",
                             justify="left",
                             wraplength=640,
@@ -141,13 +156,13 @@ class MainWindow(ctk.CTk):
         self.ai_label.pack(padx=24, pady=12)
 
         self.change_theme_btn = ctk.CTkButton(
-            self,
+            self.body,
             text="Alternar tema",
             command=self.change_theme,
         )
         self.change_theme_btn.pack(padx=10, pady=16)
 
-        key_frame = ctk.CTkFrame(self, fg_color="transparent")
+        key_frame = ctk.CTkFrame(self.body, fg_color="transparent")
         key_frame.pack(padx=20, pady=20)
 
         self.api_key_entry = ctk.CTkEntry(
@@ -166,7 +181,7 @@ class MainWindow(ctk.CTk):
         )
         self.toggle_key_btn.pack(side="left")
 
-        model_frame = ctk.CTkFrame(self, fg_color="transparent")
+        model_frame = ctk.CTkFrame(self.body, fg_color="transparent")
         model_frame.pack(pady=(0, 16))
 
         self.model_menu = ctk.CTkOptionMenu(
@@ -184,6 +199,39 @@ class MainWindow(ctk.CTk):
             command=self.refresh_models,
         )
         self.refresh_models_btn.pack(side="left")
+
+    def _post(self, callback):
+        """Agenda `callback` na thread da interface (seguro de chamar de outras threads)."""
+        self._ui_queue.put(callback)
+
+    def _drain_ui_queue(self):
+        try:
+            while True:
+                self._ui_queue.get_nowait()()
+        except queue.Empty:
+            pass
+        self.after(30, self._drain_ui_queue)
+
+    def _on_resize(self, event):
+        if event.widget is not self:
+            return
+        if self._wrap_job is not None:
+            self.after_cancel(self._wrap_job)
+        self._wrap_job = self.after(80, lambda: self._apply_wrap(event.width))
+
+    def _apply_wrap(self, width):
+        self._wrap_job = None
+        wrap = max(280, width - 90)
+        for label in self._text_labels:
+            label.configure(wraplength=wrap)
+
+    def _progress(self, on):
+        if on:
+            self.progress.pack(after=self.analyze_button, pady=(0, 8))
+            self.progress.start()
+        else:
+            self.progress.stop()
+            self.progress.pack_forget()
 
     def refresh_models(self):
         api_key = "".join(self.api_key_entry.get().split())
@@ -212,7 +260,7 @@ class MainWindow(ctk.CTk):
                 self.model_menu.set(current if current in models else AUTO_MODEL)
                 self.response_label.configure(text=f"{len(models)} modelos disponíveis. Mais novo: {models[0]}.")
 
-        self.after(0, apply)
+        self._post(apply)
 
     def toggle_key_visibility(self):
         if self.api_key_entry.cget("show") == "*":
@@ -233,8 +281,20 @@ class MainWindow(ctk.CTk):
         if not path:
             return
 
+        # Descarta qualquer análise/consulta à IA em andamento da imagem anterior.
+        self._request_id += 1
+        self._progress(False)
+        self.response_label.configure(text="")
+        self.ai_label.configure(text="")
+
         self.selected_path = path
-        image = Image.open(path).convert("RGB")
+        try:
+            image = ImageOps.exif_transpose(Image.open(path)).convert("RGB")
+        except Exception as error:
+            self.selected_path = None
+            self.analyze_button.configure(state="disabled")
+            self.result_label.configure(text=f"Não foi possível abrir a imagem.\n{error}")
+            return
         image.thumbnail((360, 360))
         self.preview_image = ctk.CTkImage(
             light_image=image,
@@ -245,53 +305,91 @@ class MainWindow(ctk.CTk):
         self.analyze_button.configure(state="normal")
         self.result_label.configure(text="Imagem pronta. Clique em Analisar.")
 
-    def _ensure_model(self):
+    def _ensure_model(self, status):
         if self._model is not None:
             return
 
         import torch
 
         if not model_available():
-            self.result_label.configure(text="Baixando o modelo (só na primeira vez)...")
-            self.update_idletasks()
+            status("Baixando o modelo (só na primeira vez)...")
             download_model()
 
-        self.result_label.configure(text="Carregando modelo...")
-        self.update_idletasks()
+        status("Carregando modelo...")
 
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self._classes = load_classes()
         self._model = load_model(num_classes=len(self._classes), device=self._device)
 
     def analyze_image(self):
+        if self._analyzing:
+            return
         if not self.selected_path:
             self.result_label.configure(text="Selecione uma imagem primeiro.")
             return
 
+        # Lê os widgets aqui (thread da interface); a thread de trabalho não toca neles.
         plant_name = self.plant_menu.get()
         plant = PLANT_CHOICES.get(plant_name)
+        api_key = "".join(self.api_key_entry.get().split())
+        model_choice = self.model_menu.get()
+
+        self._request_id += 1
+        rid = self._request_id
+        self._analyzing = True
+        self.analyze_button.configure(state="disabled")
+        self.select_button.configure(state="disabled")
+        self.response_label.configure(text="")
+        self.ai_label.configure(text="")
+        self.result_label.configure(text="Analisando...")
+        self._progress(True)
+
+        threading.Thread(
+            target=self._analyze_worker,
+            args=(rid, self.selected_path, plant_name, plant, api_key, model_choice),
+            daemon=True,
+        ).start()
+
+    def _analyze_worker(self, rid, path, plant_name, plant, api_key, model_choice):
+        def status(text):
+            self._post(lambda: self.result_label.configure(text=text))
 
         try:
-            self._ensure_model()
+            self._ensure_model(status)
             results = predict(
-                self.selected_path,
+                path,
                 top_k=3,
                 model=self._model,
                 classes=self._classes,
                 device=self._device,
                 plant=plant,
             )
-        except FileNotFoundError as error:
-            self.result_label.configure(text=str(error))
+            error = None
+        except Exception as exc:
+            results, error = None, exc
+
+        self._post(
+            lambda: self._on_analysis_done(rid, results, error, plant_name, plant, api_key, model_choice)
+        )
+
+    def _on_analysis_done(self, rid, results, error, plant_name, plant, api_key, model_choice):
+        self._analyzing = False
+        self.select_button.configure(state="normal")
+        self.analyze_button.configure(state="normal")
+        if rid != self._request_id:
             return
-        except Exception as error:
-            self.result_label.configure(text=f"Não foi possível analisar a imagem.\n{error}")
+
+        if error is not None:
+            self._progress(False)
+            if isinstance(error, FileNotFoundError):
+                self.result_label.configure(text=str(error))
+            else:
+                self.result_label.configure(text=f"Não foi possível analisar a imagem.\n{error}")
             return
 
         if not results:
+            self._progress(False)
             self.result_label.configure(text="Nenhum resultado foi encontrado.")
-            self.response_label.configure(text="")
-            self.ai_label.configure(text="")
             return
 
         top_label, top_prob = results[0]
@@ -308,25 +406,24 @@ class MainWindow(ctk.CTk):
 
         if level == "baixa":
             # Abaixo do limite, o top-1 erra mais do que acerta: não recomendar tratamento.
+            self._progress(False)
             self.response_label.configure(
                 text="Para um resultado mais confiável, tente outra foto: uma única folha, "
                 "bem iluminada e em foco, ocupando a maior parte da imagem."
             )
-            self.ai_label.configure(text="")
             return
 
         if top_label.lower().endswith("___healthy"):
+            self._progress(False)
             message = "A folha foi classificada como saudável. Nenhuma doença foi detectada."
             if level == "media":
                 message = "A folha parece saudável, mas a confiança é moderada. Se houver manchas ou sintomas, tente outra foto."
             self.response_label.configure(text=message)
-            self.ai_label.configure(text="")
             return
 
-        api_key = "".join(self.api_key_entry.get().split())
-
         if not api_key:
-            self.response_label.configure(text="Insira sua chave da API Gemini.")
+            self._progress(False)
+            self.response_label.configure(text="Insira sua chave da API Gemini para ver orientações de tratamento.")
             return
 
         top1 = f"{format_class_name(top_label)} — {top_prob * 100:.1f}%"
@@ -337,14 +434,20 @@ class MainWindow(ctk.CTk):
             "Prevenção: explique 1 ou 2 medidas para evitar o reaparecimento ou disseminação da doença."
             "Não adicione introduções, saudações, conclusões ou outras seções. Não omita nenhuma das três seções. Não mostre colchetes ou instruções do prompt. Mantenha o resultado informativo, mas sem textos longos ou explicações excessivamente técnicas.")
 
-        # Inicia a consulta à IA em uma thread separada para não travar a interface
+        # A consulta à IA roda em outra thread; a barra de progresso continua até ela terminar.
         self.response_label.configure(text="Consultando IA para orientações... Aguarde.")
-        self.ai_label.configure(text="")
         threading.Thread(
             target=self._fetch_ai_guidance,
-            args=(prompt, api_key, self.model_menu.get()),
+            args=(prompt, api_key, model_choice, rid),
             daemon=True,
         ).start()
+
+    def _show_ai(self, rid, response, note):
+        if rid != self._request_id:
+            return  # o usuário já trocou de imagem ou analisou de novo
+        self._progress(False)
+        self.response_label.configure(text=response)
+        self.ai_label.configure(text=note)
 
     @staticmethod
     def _is_retryable(error):
@@ -356,7 +459,7 @@ class MainWindow(ctk.CTk):
             for w in ("overloaded", "unavailable", "high demand", "resource_exhausted", "quota", "not found")
         )
 
-    def _fetch_ai_guidance(self, prompt, api_key, selected_model):
+    def _fetch_ai_guidance(self, prompt, api_key, selected_model, rid):
         client = genai.Client(api_key=api_key)
 
         if selected_model == AUTO_MODEL:
@@ -390,15 +493,13 @@ class MainWindow(ctk.CTk):
                 "\nEsta resposta foi gerada por IA. Para obter orientações mais confiáveis "
                 "e adequadas ao caso, recomenda-se consultar um profissional especializado."
             )
-            self.after(0, lambda: self.response_label.configure(text=text))
-            self.after(0, lambda: self.ai_label.configure(text=note))
+            self._post(lambda: self._show_ai(rid, text, note))
             return
 
         message = self._describe_ai_error(last_error)
         if failed:
             message = f"Modelos tentados sem sucesso: {', '.join(failed)}.\n\n{message}"
-        self.after(0, lambda: self.response_label.configure(text=message))
-        self.after(0, lambda: self.ai_label.configure(text=""))
+        self._post(lambda: self._show_ai(rid, message, ""))
 
     @staticmethod
     def _describe_ai_error(error):
