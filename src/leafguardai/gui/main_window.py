@@ -5,6 +5,8 @@ from PIL import Image
 import re
 import sys
 import threading
+import tkinter as tk
+from pathlib import Path
 
 from leafguardai.model.infer import (
     PLANT_CHOICES,
@@ -16,6 +18,8 @@ from leafguardai.model.infer import (
     model_available,
     predict,
 )
+
+ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
 UNKNOWN_PLANT ="Não sei / outra planta"
 
@@ -62,6 +66,7 @@ class MainWindow(ctk.CTk):
         self.geometry("720x820")
         ctk.set_default_color_theme("green")
         ctk.set_appearance_mode("dark")
+        self._set_app_icon()
 
         self.selected_path = None
         self.preview_image = None
@@ -70,6 +75,17 @@ class MainWindow(ctk.CTk):
         self._device = None
 
         self.create_widgets()
+
+    def _set_app_icon(self):
+        try:
+            if sys.platform.startswith("win"):
+                self.iconbitmap(str(ASSETS_DIR / "icon.ico"))
+            else:
+                self._icon_photo = tk.PhotoImage(file=str(ASSETS_DIR / "icon.png"))
+                self.iconphoto(True, self._icon_photo)
+        except Exception as error:
+            # O ícone é só estético: nunca deve impedir o app de abrir.
+            print(f"[Ícone] não foi possível carregar: {error}", file=sys.stderr)
 
     def create_widgets(self):
         self.select_button = ctk.CTkButton(

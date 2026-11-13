@@ -1,0 +1,109 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#071a1f"/>
+            <stop offset="100%" stop-color="#0b1016"/>
+        </linearGradient>
+
+        <linearGradient id="leafGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7CFC6A"/>
+            <stop offset="100%" stop-color="#2E8B2E"/>
+        </linearGradient>
+
+        <linearGradient id="scanGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#52ff9a"/>
+            <stop offset="100%" stop-color="#7dffd4"/>
+        </linearGradient>
+
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+
+        <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- fundo -->
+    <rect x="24" y="24" width="464" height="464" rx="96" fill="url(#bg)"/>
+
+    <!-- scanner corners -->
+    <g stroke="url(#scanGrad)" stroke-width="16" stroke-linecap="round" fill="none" filter="url(#softGlow)">
+        <path d="M120 120 H180 M120 120 V180"/>
+        <path d="M392 120 H332 M392 120 V180"/>
+        <path d="M120 392 H180 M120 392 V332"/>
+        <path d="M392 392 H332 M392 392 V332"/>
+    </g>
+
+    <!-- linha de scan -->
+    <line x1="110" y1="285" x2="360" y2="285" stroke="#7dffd4" stroke-width="8" opacity="0.8" filter="url(#glow)"/>
+
+    <!-- folha -->
+    <g transform="translate(0,10)">
+        <path
+            d="M192 348
+            C160 300, 155 230, 205 185
+            C254 141, 323 127, 390 128
+            C392 194, 381 257, 341 301
+            C304 342, 247 360, 192 348 Z"
+            fill="url(#leafGrad)"/>
+
+        <!-- nervura principal -->
+        <path d="M203 343 C225 295, 260 227, 352 150"
+              stroke="#9BE564" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+        <!-- nervuras secundárias -->
+        <path d="M233 297 C220 272, 204 254, 186 242" stroke="#8FD85C" stroke-width="4" fill="none" opacity="0.7"/>
+        <path d="M254 270 C242 247, 230 230, 214 218" stroke="#8FD85C" stroke-width="4" fill="none" opacity="0.7"/>
+        <path d="M276 243 C270 224, 266 206, 267 187" stroke="#8FD85C" stroke-width="4" fill="none" opacity="0.7"/>
+        <path d="M293 221 C303 202, 318 187, 338 172" stroke="#8FD85C" stroke-width="4" fill="none" opacity="0.7"/>
+    </g>
+
+    <!-- manchas da doença -->
+    <g opacity="0.95">
+        <circle cx="340" cy="193" r="14" fill="#7A4A21"/>
+        <circle cx="366" cy="215" r="11" fill="#5C3317"/>
+        <circle cx="328" cy="224" r="10" fill="#6F3D1E"/>
+        <circle cx="353" cy="241" r="16" fill="#75451F"/>
+        <circle cx="315" cy="200" r="8" fill="#8C5A2B"/>
+
+        <!-- halos amarelados -->
+        <circle cx="340" cy="193" r="22" fill="#D9D14A" opacity="0.25"/>
+        <circle cx="366" cy="215" r="18" fill="#D9D14A" opacity="0.22"/>
+        <circle cx="328" cy="224" r="17" fill="#D9D14A" opacity="0.22"/>
+        <circle cx="353" cy="241" r="24" fill="#D9D14A" opacity="0.20"/>
+        <circle cx="315" cy="200" r="14" fill="#D9D14A" opacity="0.20"/>
+    </g>
+
+    <!-- lupa -->
+    <g transform="translate(0,0)">
+        <circle cx="325" cy="325" r="62" fill="none" stroke="#C9FFE8" stroke-width="14"/>
+        <line x1="370" y1="370" x2="408" y2="408" stroke="#C9FFE8" stroke-width="18" stroke-linecap="round"/>
+    </g>
+
+    <!-- símbolo de rede neural dentro da lupa -->
+    <g fill="#6DFFB3" stroke="#6DFFB3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="296" y1="312" x2="325" y2="294"/>
+        <line x1="296" y1="312" x2="298" y2="344"/>
+        <line x1="325" y1="294" x2="356" y2="315"/>
+        <line x1="325" y1="325" x2="356" y2="315"/>
+        <line x1="325" y1="325" x2="298" y2="344"/>
+        <line x1="325" y1="325" x2="348" y2="350"/>
+        <line x1="356" y1="315" x2="348" y2="350"/>
+
+        <circle cx="296" cy="312" r="8"/>
+        <circle cx="325" cy="294" r="8"/>
+        <circle cx="356" cy="315" r="8"/>
+        <circle cx="325" cy="325" r="8"/>
+        <circle cx="298" cy="344" r="8"/>
+        <circle cx="348" cy="350" r="8"/>
+    </g>
+</svg>
