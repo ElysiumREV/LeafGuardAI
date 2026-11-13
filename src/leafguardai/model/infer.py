@@ -9,11 +9,11 @@ import torch
 from PIL import Image, ImageOps
 
 from leafguardai.model.classifier import create_model
+from leafguardai.paths import models_dir
 from leafguardai.vision.transforms import get_eval_transforms
 from leafguardai.vision.processor import ImageProcessor
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-MODELS_DIR = PROJECT_ROOT / "models"
+MODELS_DIR = models_dir()
 CHECKPOINT_PATH = MODELS_DIR / "best_model.pt"
 CLASSES_PATH = MODELS_DIR / "classes.json"
 PREPROCESSING_PATH = MODELS_DIR / "preprocessing.json"
