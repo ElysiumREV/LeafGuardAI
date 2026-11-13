@@ -2,6 +2,8 @@ import customtkinter as ctk
 from customtkinter import filedialog
 from google import genai
 from PIL import Image
+import re
+import sys
 import threading
 
 from leafguardai.model.infer import (
@@ -15,7 +17,42 @@ from leafguardai.model.infer import (
     predict,
 )
 
-UNKNOWN_PLANT = "Não sei / outra planta"
+UNKNOWN_PLANT ="Não sei / outra planta"
+
+# Lista de reserva, usada só se não for possível consultar os modelos da API.
+FALLBACK_MODELS = [
+    "gemini-3.7-flash",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+]
+MAX_AUTO_CANDIDATES = 6
+_EXCLUDED = ("tts", "image", "live", "audio", "embedding", "robotics", "computer-use", "vision", "thinking", "learnlm")
+_MODEL_RE = re.compile(r"^gemini-(\d+(?:\.\d+)?)-flash(-lite)?(?:-(.+))?$")
+
+
+def discover_models(client):
+    """Consulta a API e devolve os modelos Gemini Flash disponíveis, do mais novo ao mais antigo."""
+    found = []
+    for model in client.models.list():
+        name = (model.name or "").removeprefix("models/")
+        actions = model.supported_actions or []
+        if actions and "generateContent" not in actions:
+            continue
+        if any(word in name for word in _EXCLUDED):
+            continue
+        match = _MODEL_RE.match(name)
+        if not match:
+            continue
+        version = tuple(int(x) for x in match.group(1).split("."))
+        is_lite = bool(match.group(2))
+        suffix = match.group(3) or ""
+        # Estáveis (sem sufixo) vêm antes de preview/exp/datados da mesma versão.
+        found.append((tuple(-v for v in version), is_lite, suffix != "", name))
+    found.sort()
+    return [item[3] for item in found]
+
+
+AUTO_MODEL = "Automático (troca se estiver ocupado)"
 
 
 class MainWindow(ctk.CTk):
@@ -94,25 +131,80 @@ class MainWindow(ctk.CTk):
         )
         self.change_theme_btn.pack(padx=10, pady=16)
 
-        self.api_key_txtbox = ctk.CTkTextbox(
-            self,
-            width = 450,
-            height = 20,
-            corner_radius = 0
-        )
+        key_frame = ctk.CTkFrame(self, fg_color="transparent")
+        key_frame.pack(padx=20, pady=20)
 
-        self.api_key_txtbox.pack(
-            padx=20,
-            pady=20,
-            
+        self.api_key_entry = ctk.CTkEntry(
+            key_frame,
+            width=360,
+            placeholder_text="Insira a API Key do Gemini (opcional)",
+            show="*",
         )
+        self.api_key_entry.pack(side="left", padx=(0, 8))
 
-        self.api_key_txtbox.insert(
-            "0.0",
-            "Insira a API Key"
+        self.toggle_key_btn = ctk.CTkButton(
+            key_frame,
+            text="Mostrar",
+            width=80,
+            command=self.toggle_key_visibility,
         )
+        self.toggle_key_btn.pack(side="left")
 
-        
+        model_frame = ctk.CTkFrame(self, fg_color="transparent")
+        model_frame.pack(pady=(0, 16))
+
+        self.model_menu = ctk.CTkOptionMenu(
+            model_frame,
+            values=[AUTO_MODEL, *FALLBACK_MODELS],
+            width=300,
+        )
+        self.model_menu.set(AUTO_MODEL)
+        self.model_menu.pack(side="left", padx=(0, 8))
+
+        self.refresh_models_btn = ctk.CTkButton(
+            model_frame,
+            text="Atualizar modelos",
+            width=130,
+            command=self.refresh_models,
+        )
+        self.refresh_models_btn.pack(side="left")
+
+    def refresh_models(self):
+        api_key = "".join(self.api_key_entry.get().split())
+        if not api_key:
+            self.response_label.configure(text="Insira a chave da API para listar os modelos.")
+            return
+        self.refresh_models_btn.configure(state="disabled", text="Consultando...")
+        threading.Thread(target=self._refresh_models_worker, args=(api_key,), daemon=True).start()
+
+    def _refresh_models_worker(self, api_key):
+        try:
+            models = discover_models(genai.Client(api_key=api_key))
+            error = None
+        except Exception as exc:
+            models, error = [], exc
+
+        def apply():
+            self.refresh_models_btn.configure(state="normal", text="Atualizar modelos")
+            if error is not None:
+                self.response_label.configure(text=self._describe_ai_error(error))
+            elif not models:
+                self.response_label.configure(text="Nenhum modelo Gemini Flash disponível para esta chave.")
+            else:
+                current = self.model_menu.get()
+                self.model_menu.configure(values=[AUTO_MODEL, *models])
+                self.model_menu.set(current if current in models else AUTO_MODEL)
+                self.response_label.configure(text=f"{len(models)} modelos disponíveis. Mais novo: {models[0]}.")
+
+        self.after(0, apply)
+
+    def toggle_key_visibility(self):
+        if self.api_key_entry.cget("show") == "*":
+            self.api_key_entry.configure(show="")
+            self.toggle_key_btn.configure(text="Ocultar")
+        else:
+            self.api_key_entry.configure(show="*")
+            self.toggle_key_btn.configure(text="Mostrar")
 
     def select_image(self):
         path = filedialog.askopenfilename(
@@ -215,9 +307,9 @@ class MainWindow(ctk.CTk):
             self.ai_label.configure(text="")
             return
 
-        api_key = self.api_key_txtbox.get("1.0", "end").strip()
+        api_key = "".join(self.api_key_entry.get().split())
 
-        if not api_key or api_key == "Insira a API Key":
+        if not api_key:
             self.response_label.configure(text="Insira sua chave da API Gemini.")
             return
 
@@ -234,28 +326,83 @@ class MainWindow(ctk.CTk):
         self.ai_label.configure(text="")
         threading.Thread(
             target=self._fetch_ai_guidance,
-            args=(prompt, api_key),
+            args=(prompt, api_key, self.model_menu.get()),
             daemon=True,
         ).start()
 
-    def _fetch_ai_guidance(self, prompt, api_key):
-        try:
-            client = genai.Client(api_key=api_key)
-            interaction = client.interactions.create(
-                model="gemini-3.7-flash",
-                input=prompt
+    @staticmethod
+    def _is_retryable(error):
+        """Erros em que vale tentar outro modelo (alto uso, cota, indisponível)."""
+        code = getattr(error, "code", None) or getattr(error, "status_code", None)
+        low = str(error).lower()
+        return code in (404, 429, 500, 503, 504) or any(
+            w in low
+            for w in ("overloaded", "unavailable", "high demand", "resource_exhausted", "quota", "not found")
+        )
+
+    def _fetch_ai_guidance(self, prompt, api_key, selected_model):
+        client = genai.Client(api_key=api_key)
+
+        if selected_model == AUTO_MODEL:
+            try:
+                candidates = discover_models(client)[:MAX_AUTO_CANDIDATES]
+            except Exception as error:
+                print(f"[Gemini] listagem de modelos falhou: {error}", file=sys.stderr)
+                candidates = []
+            candidates = candidates or list(FALLBACK_MODELS)
+        else:
+            candidates = [selected_model]
+        failed = []
+        last_error = None
+
+        for model in candidates:
+            try:
+                interaction = client.interactions.create(model=model, input=prompt)
+            except Exception as error:
+                last_error = error
+                print(f"[Gemini] {model}: {type(error).__name__}: {error}", file=sys.stderr)
+                if self._is_retryable(error):
+                    failed.append(model)
+                    continue
+                break
+
+            text = interaction.output_text
+            note = f"Modelo: {model}"
+            if failed:
+                note += f" (indisponíveis agora: {', '.join(failed)})"
+            note += (
+                "\nEsta resposta foi gerada por IA. Para obter orientações mais confiáveis "
+                "e adequadas ao caso, recomenda-se consultar um profissional especializado."
             )
-            # Atualiza a UI com o resultado
-            self.after(0, lambda: self.response_label.configure(text=interaction.output_text))
-            self.after(0, lambda: self.ai_label.configure(
-                text="Esta resposta foi gerada por IA. Para obter orientações mais confiáveis e adequadas ao caso, recomenda-se consultar um profissional especializado."
-            ))
-        except Exception:
-            self.after(0, lambda: self.response_label.configure(
-                text="Não foi possível obter as orientações da IA agora. "
-                "Tente novamente em alguns instantes."
-            ))
-            self.after(0, lambda: self.ai_label.configure(text=""))
+            self.after(0, lambda: self.response_label.configure(text=text))
+            self.after(0, lambda: self.ai_label.configure(text=note))
+            return
+
+        message = self._describe_ai_error(last_error)
+        if failed:
+            message = f"Modelos tentados sem sucesso: {', '.join(failed)}.\n\n{message}"
+        self.after(0, lambda: self.response_label.configure(text=message))
+        self.after(0, lambda: self.ai_label.configure(text=""))
+
+    @staticmethod
+    def _describe_ai_error(error):
+        raw = str(error)
+        low = raw.lower()
+        code = getattr(error, "code", None) or getattr(error, "status_code", None)
+
+        if code in (400, 401, 403) or "api key" in low or "api_key" in low or "permission" in low:
+            reason = "Chave da API inválida ou sem permissão. Confira se copiou a chave inteira."
+        elif code == 404 or "not found" in low:
+            reason = "Modelo não encontrado para a sua chave."
+        elif code == 429 or "quota" in low or "resource_exhausted" in low:
+            reason = "Limite de uso (cota) da API atingido. Tente mais tarde."
+        elif any(w in low for w in ("connect", "timeout", "resolve", "network")):
+            reason = "Falha de conexão. Verifique sua internet."
+        else:
+            reason = "Não foi possível obter as orientações da IA."
+
+        print(f"[Gemini] {type(error).__name__}: {raw}", file=sys.stderr)
+        return f"{reason}\n\nDetalhe: {type(error).__name__}: {raw[:300]}"
 
     def change_theme(self):
         if ctk.get_appearance_mode().lower() == "dark":

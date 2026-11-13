@@ -108,7 +108,7 @@ O `uv` atualizará automaticamente os arquivos `pyproject.toml` e `uv.lock`.
 
 ### Configurando a API do Gemini
 
-Crie uma chave no [Google AI Studio](https://aistudio.google.com/api-keys) e cole-a no campo “Insira a API Key” na parte inferior da interface.
+Crie uma chave no [Google AI Studio](https://aistudio.google.com/api-keys) e cole-a no campo da chave na parte inferior da interface (use o botão “Mostrar” para conferir o que colou).
 
 ### Executando a GUI
 
